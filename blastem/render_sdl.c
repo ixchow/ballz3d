@@ -1775,6 +1775,121 @@ inline void normalize(float a[3]) {
 	a[2] *= inv_len;
 }
 
+//Comments as per player 1 structure, though player 2 seems to just be offset:
+//0x716 is "base" of struct, we think
+struct Player {
+	uint16_t pad[3]; //0x716 - 0x71A
+
+	int16_t forward_x; //0x71C
+	int16_t forward_y; //0x71E
+
+	int16_t at_x; //0x720
+	int16_t at_x_frac; //0x722
+	int16_t at_y; //0x724
+	int16_t at_y_frac; //0x726
+	int16_t at_z; //0x728
+	int16_t at_z_frac; //0x72A  (NOTE: not checked/used?)
+
+	int16_t pad2[(0x874 - 0x72C)/2]; //0x72C - 0x872
+
+	struct __attribute__((__packed__)) XYZ {
+		int16_t x;
+		int16_t y;
+		int16_t z;
+	} balls[28]; //0x874 - 0x91A
+
+	int16_t pad3[(0xA54 - 0x91C)/2]; //0x91C - 0xA52
+
+	struct __attribute__((__packed__)) RC {
+		uint8_t color;
+		uint8_t radius;
+	} color_radius[28]; //0xA54-0xA96
+
+};
+
+static void draw_player(struct OverlayAttrib *attribs, uint32_t *attribs_count,
+	uint8_t *bytes, uint8_t R, uint8_t G, uint8_t B) {
+
+	//some paranoia about player structure layout:
+	if (offsetof(struct Player, balls) != 0x874 - 0x716) {
+		warning("Wrong structure shape -- balls is at %x\n", offsetof(struct Player, balls));
+		exit(1);
+	}
+
+	if (offsetof(struct Player, color_radius) != 0xa54 - 0x716) {
+		warning("Wrong structure shape -- color_radius is at %x wanted %x\n", offsetof(struct Player, color_radius), 0xa54 - 0x716);
+		exit(1);
+	}
+
+
+	struct Player *player = (struct Player *)(bytes + 0x716);
+
+	float px = player->at_x;
+	//px += *(int16_t * )(bytes + 0x720 + 2) / (float)(0x10000); //Maybe?
+	float py = player->at_y;
+	//py += *(int16_t * )(bytes + 0x720 + 6) / (float)(0x10000); //Maybe?
+	float pz = player->at_z;
+	//pz += *(int16_t * )(bytes + 0x720 + 10) / (float)(0x10000); //Maybe?
+
+	float fx = player->forward_x / (float)(0x8000);
+	float fy = player->forward_y / (float)(0x8000);
+
+	float rx = -fy;
+	float ry = fx;
+
+	px *= 0.5f; py *= 0.5f; pz *= 0.5f;
+
+	for (uint32_t ball = 0; ball < 28; ++ball) {
+		float x = player->balls[ball].x;
+		float y = player->balls[ball].y;
+		float z = player->balls[ball].z;
+
+		float radius = 0.25f * player->color_radius[ball].radius;
+		add_sphere(attribs, attribs_count,
+			px + rx * x + fx * y,
+			py + ry * x + fy * y,
+			pz + z,
+			radius,
+			R, G, B, 0xff
+		);
+	}
+
+	/* old draw code which uses offsets instead of structre:
+	int16_t *xyz = (int16_t *)(bytes + 0x874);
+	uint8_t *color_radius = (uint8_t *)(bytes + 0xA54);
+
+	float px = *(int16_t *)(bytes + 0x720);
+	//px += *(int16_t * )(bytes + 0x720 + 2) / (float)(0x10000); //Maybe?
+	float py = *(int16_t *)(bytes + 0x720 + 4);
+	//py += *(int16_t * )(bytes + 0x720 + 6) / (float)(0x10000); //Maybe?
+	float pz = *(int16_t *)(bytes + 0x720 + 8);
+	//pz += *(int16_t * )(bytes + 0x720 + 10) / (float)(0x10000); //Maybe?
+
+	float fx = *(int16_t *)(bytes + 0x71C) / (float)(0x8000);
+	float fy = *(int16_t *)(bytes + 0x71E) / (float)(0x8000);
+
+	float rx = -fy;
+	float ry = fx;
+
+	px *= 0.5f; py *= 0.5f; pz *= 0.5f;
+
+	for (uint32_t ball = 0; ball < 30; ++ball) {
+		float x = xyz[3*ball+0];
+		float y = xyz[3*ball+1];
+		float z = xyz[3*ball+2];
+
+		float radius = 0.25f * color_radius[2*ball+1];
+		add_sphere(attribs, attribs_count,
+			px + rx * x + fx * y,
+			py + ry * x + fy * y,
+			pz + z,
+			radius,
+			R, G, B, 0xff
+		);
+	}
+	*/
+}
+
 static uint32_t last_width, last_height;
 static uint8_t interlaced;
 static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint16_t *memory)
@@ -1835,9 +1950,19 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 			float fovy = 60.0f / 180.0f * M_PI;
 			float zNear = 0.1f;
 
+			uint8_t *bytes = (uint8_t *)memory;
+
 			float cam_at[3] = {500.0f, 0.0f, 500.0f};
 			float cam_target[3] = {0.0f, 0.0f, 0.0f};
 			float cam_up[3] = {0.0f, 0.0f, 1.0f};
+
+			{
+				float cx = *(int16_t *)(bytes + 0x11F2);
+				float cy = *(int16_t *)(bytes + 0x11F4);
+				float cz = *(int16_t *)(bytes + 0x11F6);
+
+				add_sphere(attribs, &overlay_count, cx,cy,cz, 1.0f, 0xff, 0x00, 0xff, 0xff);
+			}
 
 			//TODO: pull camera positioning data from memory!
 
@@ -1949,63 +2074,10 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 			add_sphere(attribs, &overlay_count, 0.0f, 1.0f, 0.0f, 1.0f, 0x00, 0xff, 0x00, 0xff);
 			add_sphere(attribs, &overlay_count, 0.0f, 0.0f, 1.0f, 1.0f, 0x00, 0x00, 0xff, 0xff);
 
-
-			uint8_t *bytes = (uint8_t *)memory;
-
-			{ //player 1:
-				int16_t *xyz = (int16_t *)(bytes + 0x874);
-				uint8_t *color_radius = (uint8_t *)(bytes + 0xA54);
-
-				float px = *(int16_t *)(bytes + 0x720);
-				//px += *(int16_t * )(bytes + 0x720 + 2) / (float)(0x10000); //Maybe?
-				float py = *(int16_t *)(bytes + 0x720 + 4);
-				//py += *(int16_t * )(bytes + 0x720 + 6) / (float)(0x10000); //Maybe?
-				float dx = *(int16_t *)(bytes + 0x71C) / (float)(0xffff);
-				float dy = *(int16_t *)(bytes + 0x71E) / (float)(0xffff);
-
-				for (uint32_t ball = 0; ball < 30; ++ball) {
-					float x = xyz[3*ball+0];
-					float y = xyz[3*ball+1];
-					float z = xyz[3*ball+2];
-	
-					float radius = 0.25f * color_radius[2*ball+1];
-					add_sphere(attribs, &overlay_count,
-						px + dx * x + -dy * y,
-						py + dy * x +  dx * y,
-						z,
-						radius,
-						0xff, 0xff, 0xff, 0xff
-					);
-				}
-			}
-
-			{ //player 2:
-				int32_t offset = (0xf8e - 0xa54);
-				int16_t *xyz = (int16_t *)(bytes + 0x874 + offset);
-				uint8_t *color_radius = (uint8_t *)(bytes + 0xA54 + offset);
-
-				float px = *(int16_t *)(bytes + 0x720 + offset);
-				//px += *(int16_t * )(bytes + 0x720 + 2) / (float)(0x10000); //Maybe?
-				float py = *(int16_t *)(bytes + 0x720 + 4 + offset);
-				//py += *(int16_t * )(bytes + 0x720 + 6) / (float)(0x10000); //Maybe?
-				float dx = *(int16_t *)(bytes + 0x71C + offset) / (float)(0xffff);
-				float dy = *(int16_t *)(bytes + 0x71E + offset) / (float)(0xffff);
-
-				for (uint32_t ball = 0; ball < 30; ++ball) {
-					float x = xyz[3*ball+0];
-					float y = xyz[3*ball+1];
-					float z = xyz[3*ball+2];
-	
-					float radius = 0.25f * color_radius[2*ball+1];
-					add_sphere(attribs, &overlay_count,
-						px + dx * x + -dy * y,
-						py + dy * x +  dx * y,
-						z,
-						radius,
-						0xff, 0xff, 0xff, 0xff
-					);
-				}
-			}
+			//player 1:
+			draw_player(attribs, &overlay_count, bytes, 0xff, 0xff, 0xff);
+			//player 2:
+			draw_player(attribs, &overlay_count, bytes + (0xf8e - 0xa54), 0xff, 0x00, 0xff);
 
 		} else {
 			printf("(no memory)\n");
