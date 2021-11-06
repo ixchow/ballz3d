@@ -634,7 +634,10 @@ static void gl_setup()
 		"in vec4 color;\n"
 		"out vec4 fragColor;\n"
 		"void main() {\n"
-		"	fragColor = vec4(normal * 0.5 + 0.5, 1.0);\n"
+		"	vec3 n = normalize(normal);\n"
+		"	vec3 l = vec3(0.0, 0.0, 1.0);\n"
+		"	float e = 0.5 * dot(n,l) + 0.5;\n"
+		"	fragColor = vec4(color.rgb * e, color.a);\n"
 		"}\n"
 	);
 
@@ -1760,6 +1763,18 @@ uint8_t events_processed;
 #define FPS_INTERVAL 1000
 #endif
 
+//vector math helpers:
+inline float dot(float a[3], float b[3]) {
+	return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+}
+
+inline void normalize(float a[3]) {
+	float inv_len = 1.0f / sqrt(dot(a,a));
+	a[0] *= inv_len;
+	a[1] *= inv_len;
+	a[2] *= inv_len;
+}
+
 static uint32_t last_width, last_height;
 static uint8_t interlaced;
 static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint16_t *memory)
@@ -1817,71 +1832,181 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 			//upload to GPU for display:
 			//set up viewing matrix:
 			float aspect = main_width / (float)main_height; //<--- hmmmmmmmm
+			float fovy = 60.0f / 180.0f * M_PI;
+			float zNear = 0.1f;
 
-			//TODO: I really want to just use GLM for my matrix math -- maybe separate file?
+			float cam_at[3] = {500.0f, 0.0f, 500.0f};
+			float cam_target[3] = {0.0f, 0.0f, 0.0f};
+			float cam_up[3] = {0.0f, 0.0f, 1.0f};
 
-			GLfloat object_to_clip[16] = { //4x4, column major
-				1.0f / aspect * 0.01f, 0.0f, 0.0f, 0.0f,
-				0.0f, 0.0f,-1.0f * 0.01f, 0.0f,
-				0.0f, 1.0f * 0.01f, 0.0f, 0.0f,
-				0.0f, 0.0f, 0.0f, 1.0f
-			};
-			GLfloat object_to_light[14] = { //4x3, column major
-				1.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f,
-				0.0f, 0.0f, 1.0f,
-				0.0f, 0.0f, 0.0f,
-			};
-			GLfloat normal_to_light[9] = { //3x3, column major
-				1.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f,
-				0.0f, 0.0f, 1.0f,
-			};
+			//TODO: pull camera positioning data from memory!
 
-			glUseProgram(overlay_program.program);
-			if (overlay_program.OBJECT_TO_CLIP_mat4 != -1U) {
-				glUniformMatrix4fv(overlay_program.OBJECT_TO_CLIP_mat4, 1, GL_FALSE, object_to_clip);
+			{ //camera setup (based on variables above)
+				float cam_out[3] = { cam_at[0] - cam_target[0], cam_at[1] - cam_target[1], cam_at[2] - cam_target[2] };
+				normalize(cam_out);
+				{ //make cam_up perpendicular:
+					float d = dot(cam_out, cam_up);
+					cam_up[0] -= d * cam_out[0]; cam_up[1] -= d * cam_out[1]; cam_up[2] -= d * cam_out[2];
+					normalize(cam_up);
+				}
+				float cam_right[3] = {
+					cam_up[1]*cam_out[2] - cam_up[2]*cam_out[1],
+					cam_up[2]*cam_out[0] - cam_up[0]*cam_out[2],
+					cam_up[0]*cam_out[1] - cam_up[1]*cam_out[0]
+				};
+
+				GLfloat lookat[16] = { //4x4, column major
+					cam_right[0],cam_up[0],cam_out[0], 0.0f,
+					cam_right[1],cam_up[1],cam_out[1], 0.0f,
+					cam_right[2],cam_up[2],cam_out[2], 0.0f,
+					-dot(cam_right,cam_at), -dot(cam_up,cam_at),-dot(cam_out,cam_at), 1.0f
+				};
+
+				/*debug_message("l[%f %f %f %f\n %f %f %f %f\n %f %f %f %f\n %f %f %f %f]\n",
+					lookat[0], lookat[4], lookat[8], lookat[12],
+					lookat[1], lookat[5], lookat[9], lookat[13],
+					lookat[2], lookat[6], lookat[10], lookat[14],
+					lookat[3], lookat[7], lookat[11], lookat[15]
+				);*/
+
+
+				//based on glm::infinitePerspective ( https://github.com/g-truc/glm/blob/master/glm/ext/matrix_clip_space.inl ):
+				float range = tan(fovy / 2.0f) * zNear;
+				float left = -range * aspect;
+				float right = range * aspect;
+				float bottom = -range;
+				float top = range;
+				GLfloat perspective[16] = { //4x4, column major
+					2.0f * zNear / (right - left), 0.0f, 0.0f, 0.0f,
+					0.0f, 2.0f * zNear / (top - bottom), 0.0f, 0.0f,
+					0.0f, 0.0f, -1.0f, -1.0f,
+					0.0f, 0.0f, -2.0f * zNear, 0.0f
+				};
+
+				/*
+				//DEBUG: NO perspective!
+				GLfloat perspective[16] = { //4x4, column major
+					1.0f, 0.0f, 0.0f, 0.0f,
+					0.0f, 1.0f, 0.0f, 0.0f,
+					0.0f, 0.0f, 0.0001f, 0.0f,
+					0.0f, 0.0f, 0.0f, 1.0f
+				};
+				*/
+
+				/*debug_message("p[%f %f %f %f\n %f %f %f %f\n %f %f %f %f\n %f %f %f %f]\n",
+					perspective[0], perspective[4], perspective[8], perspective[12],
+					perspective[1], perspective[5], perspective[9], perspective[13],
+					perspective[2], perspective[6], perspective[10], perspective[14],
+					perspective[3], perspective[7], perspective[11], perspective[15]
+				);*/
+
+				GLfloat object_to_clip[16];
+				for (uint32_t r = 0; r < 4; ++r) {
+					for (uint32_t c = 0; c < 4; ++c) {
+						object_to_clip[c*4+r] = 0.0f;
+						for (uint32_t i = 0; i < 4; ++i) {
+							object_to_clip[c*4+r] += perspective[i*4+r] * lookat[c*4+i];
+						}
+					}
+				}
+
+				/*debug_message("[%f %f %f %f\n %f %f %f %f\n %f %f %f %f\n %f %f %f %f]\n",
+					object_to_clip[0], object_to_clip[4], object_to_clip[8], object_to_clip[12],
+					object_to_clip[1], object_to_clip[5], object_to_clip[9], object_to_clip[13],
+					object_to_clip[2], object_to_clip[6], object_to_clip[10], object_to_clip[14],
+					object_to_clip[3], object_to_clip[7], object_to_clip[11], object_to_clip[15]
+				);*/
+
+
+				GLfloat object_to_light[12] = { //4x3, column major
+					lookat[0], lookat[1], lookat[2],
+					lookat[4], lookat[5], lookat[6],
+					lookat[8], lookat[9], lookat[10],
+					lookat[12], lookat[13], lookat[14],
+				};
+				GLfloat normal_to_light[9] = { //3x3, column major (inverse transpose of lookat == just lookat)
+					lookat[0], lookat[1], lookat[2],
+					lookat[4], lookat[5], lookat[6],
+					lookat[8], lookat[9], lookat[10],
+				};
+
+				glUseProgram(overlay_program.program);
+				if (overlay_program.OBJECT_TO_CLIP_mat4 != -1U) {
+					glUniformMatrix4fv(overlay_program.OBJECT_TO_CLIP_mat4, 1, GL_FALSE, object_to_clip);
+				}
+				if (overlay_program.OBJECT_TO_LIGHT_mat4x3 != -1U) {
+					glUniformMatrix4x3fv(overlay_program.OBJECT_TO_LIGHT_mat4x3, 1, GL_FALSE, object_to_light);
+				}
+				if (overlay_program.NORMAL_TO_LIGHT_mat3 != -1U) {
+					glUniformMatrix3fv(overlay_program.NORMAL_TO_LIGHT_mat3, 1, GL_FALSE, normal_to_light);
+				}
+				glUseProgram(0);
+				GL_ERRORS();
 			}
-			if (overlay_program.OBJECT_TO_LIGHT_mat4x3 != -1U) {
-				glUniformMatrix4x3fv(overlay_program.OBJECT_TO_LIGHT_mat4x3, 1, GL_FALSE, object_to_light);
-			}
-			if (overlay_program.NORMAL_TO_LIGHT_mat3 != -1U) {
-				glUniformMatrix3fv(overlay_program.NORMAL_TO_LIGHT_mat3, 1, GL_FALSE, normal_to_light);
-			}
-			glUseProgram(0);
-			GL_ERRORS();
 
-			add_sphere(attribs, &overlay_count, 
-				0.0f, 0.0f, 0.0f, 0.5f,
-				0xff, 0x00, 0xff, 0xff
-			);
+			add_sphere(attribs, &overlay_count, 0.0f, 0.0f, 0.0f, 1.0f, 0xff, 0xff, 0xff, 0xff);
+			add_sphere(attribs, &overlay_count, 1.0f, 0.0f, 0.0f, 1.0f, 0xff, 0x00, 0x00, 0xff);
+			add_sphere(attribs, &overlay_count, 0.0f, 1.0f, 0.0f, 1.0f, 0x00, 0xff, 0x00, 0xff);
+			add_sphere(attribs, &overlay_count, 0.0f, 0.0f, 1.0f, 1.0f, 0x00, 0x00, 0xff, 0xff);
 
-			add_sphere(attribs, &overlay_count, 
-				2.0f, 0.0f, 0.0f, 0.5f,
-				0xff, 0x00, 0x00, 0xff
-			);
-
-			add_sphere(attribs, &overlay_count, 
-				0.0f, 2.0f, 0.0f, 0.5f,
-				0xff, 0x00, 0x00, 0xff
-			);
 
 			uint8_t *bytes = (uint8_t *)memory;
 
-			int16_t *xyz = (int16_t *)(bytes + 0x874);
-			uint8_t *color_radius = (uint8_t *)(bytes + 0xA54);
+			{ //player 1:
+				int16_t *xyz = (int16_t *)(bytes + 0x874);
+				uint8_t *color_radius = (uint8_t *)(bytes + 0xA54);
 
-			for (uint32_t ball = 0; ball < 31; ++ball) {
-				float x = xyz[3*ball+0];
-				float y = xyz[3*ball+1];
-				float z = xyz[3*ball+2];
-				float radius = 0.25f * color_radius[2*ball+1];
-				add_sphere(attribs, &overlay_count,
-					x,y,z,
-					radius,
-					0xff, 0xff, 0xff, 0xff
-				);
+				float px = *(int16_t *)(bytes + 0x720);
+				//px += *(int16_t * )(bytes + 0x720 + 2) / (float)(0x10000); //Maybe?
+				float py = *(int16_t *)(bytes + 0x720 + 4);
+				//py += *(int16_t * )(bytes + 0x720 + 6) / (float)(0x10000); //Maybe?
+				float dx = *(int16_t *)(bytes + 0x71C) / (float)(0xffff);
+				float dy = *(int16_t *)(bytes + 0x71E) / (float)(0xffff);
+
+				for (uint32_t ball = 0; ball < 30; ++ball) {
+					float x = xyz[3*ball+0];
+					float y = xyz[3*ball+1];
+					float z = xyz[3*ball+2];
+	
+					float radius = 0.25f * color_radius[2*ball+1];
+					add_sphere(attribs, &overlay_count,
+						px + dx * x + -dy * y,
+						py + dy * x +  dx * y,
+						z,
+						radius,
+						0xff, 0xff, 0xff, 0xff
+					);
+				}
 			}
+
+			{ //player 2:
+				int32_t offset = (0xf8e - 0xa54);
+				int16_t *xyz = (int16_t *)(bytes + 0x874 + offset);
+				uint8_t *color_radius = (uint8_t *)(bytes + 0xA54 + offset);
+
+				float px = *(int16_t *)(bytes + 0x720 + offset);
+				//px += *(int16_t * )(bytes + 0x720 + 2) / (float)(0x10000); //Maybe?
+				float py = *(int16_t *)(bytes + 0x720 + 4 + offset);
+				//py += *(int16_t * )(bytes + 0x720 + 6) / (float)(0x10000); //Maybe?
+				float dx = *(int16_t *)(bytes + 0x71C + offset) / (float)(0xffff);
+				float dy = *(int16_t *)(bytes + 0x71E + offset) / (float)(0xffff);
+
+				for (uint32_t ball = 0; ball < 30; ++ball) {
+					float x = xyz[3*ball+0];
+					float y = xyz[3*ball+1];
+					float z = xyz[3*ball+2];
+	
+					float radius = 0.25f * color_radius[2*ball+1];
+					add_sphere(attribs, &overlay_count,
+						px + dx * x + -dy * y,
+						py + dy * x +  dx * y,
+						z,
+						radius,
+						0xff, 0xff, 0xff, 0xff
+					);
+				}
+			}
+
 		} else {
 			printf("(no memory)\n");
 		}
