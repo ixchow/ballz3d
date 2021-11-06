@@ -315,6 +315,140 @@ static const GLchar shader_prefix[] =
 	"#define highp\n";
 #endif
 
+//------------------------
+//For fancy overlay:
+
+static struct OverlayProgram {
+	GLuint program;
+	//attributes:
+	GLuint Position_vec4;
+	GLuint Normal_vec4;
+	GLuint Color_vec4;
+	//uniforms:
+	GLuint OBJECT_TO_CLIP_mat4;
+	GLuint OBJECT_TO_LIGHT_mat4x3;
+	GLuint NORMAL_TO_LIGHT_mat3;
+} overlay_program;
+
+static GLuint overlay_buffer_for_overlay_program = 0;
+
+static GLuint overlay_buffer = 0; //tristrip data for overlay, as:
+struct OverlayAttrib {
+	struct { GLfloat x,y,z; } Position;
+	struct { GLfloat x,y,z; } Normal;
+	struct { uint8_t r,g,b,a; } Color;
+};
+static GLuint overlay_count = 0; //attribs stored in buffer
+
+//helper for drawing spheres:
+static inline void add_sphere(
+	struct OverlayAttrib *attribs, GLuint *count,
+	float x, float y, float z,
+	float radius,
+	uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+
+	#define ATTRIB(X,Y,Z, NX,NY,NZ, R,G,B,A) \
+		do { \
+			struct OverlayAttrib *attrib = attribs + *count; \
+			*count += 1; \
+			attrib->Position.x = X; \
+			attrib->Position.y = Y; \
+			attrib->Position.z = Z; \
+			attrib->Normal.x = NX; \
+			attrib->Normal.y = NY; \
+			attrib->Normal.z = NZ; \
+			attrib->Color.r = R; \
+			attrib->Color.g = G; \
+			attrib->Color.b = B; \
+			attrib->Color.a = A; \
+		} while (0)
+
+	#define DUP_ATTRIB(ofs) \
+		do { \
+			*(attribs + *count) = *(attribs + *count + ofs); \
+			*count += 1; \
+		} while (0)
+
+	#define RINGS 8
+	#define SLICES 8
+	static float *ringzr = NULL;
+	static float *slicexy = NULL;
+	if (!ringzr) {
+		ringzr = calloc(2*sizeof(float), RINGS+1);
+		ringzr[2*0+0] =-1.0f;
+		ringzr[2*0+1] = 0.0f;
+		for (uint32_t ring = 1; ring < RINGS; ++ring) {
+			float ang = ring / (float)RINGS * M_PI;
+			ringzr[2*ring+0] = -cos(ang);
+			ringzr[2*ring+1] = sin(ang);
+		}
+		ringzr[2*RINGS+0] = 1.0f;
+		ringzr[2*RINGS+1] = 0.0f;
+	}
+	if (!slicexy) {
+		slicexy = calloc(2*sizeof(float), SLICES);
+		for (uint32_t slice = 0; slice < SLICES; ++slice) {
+			float ang = slice / (float)SLICES * 2.0f * M_PI;
+			slicexy[2*slice+0] = cos(ang);
+			slicexy[2*slice+1] = sin(ang);
+		}
+	}
+
+	for (uint32_t ring = 0; ring < RINGS; ++ring) {
+		for (uint32_t slice = 0; slice < SLICES; ++slice) {
+			float nx0 = ringzr[2*ring+1]*slicexy[2*slice+0];
+			float ny0 = ringzr[2*ring+1]*slicexy[2*slice+1];
+			float nz0 = ringzr[2*ring+0];
+
+			float nx1 = ringzr[2*(ring+1)+1]*slicexy[2*slice+0];
+			float ny1 = ringzr[2*(ring+1)+1]*slicexy[2*slice+1];
+			float nz1 = ringzr[2*(ring+1)+0];
+
+			if (slice == 0 && *count != 0) DUP_ATTRIB(-1);
+			ATTRIB(x+radius*nx0,y+radius*ny0,z+radius*nz0, nx0,ny0,nz0, r,g,b,a);
+			if (slice == 0 && *count != 1) DUP_ATTRIB(-1);
+			ATTRIB(x+radius*nx1,y+radius*ny1,z+radius*nz1, nx1,ny1,nz1, r,g,b,a);
+		}
+		DUP_ATTRIB(-SLICES*2);
+		DUP_ATTRIB(-SLICES*2);
+	}
+
+	#undef ATTRIB
+	#undef DUP_ATTRIB
+}
+
+//Utility:
+
+#define STR2(X) # X
+#define STR(X) STR2(X)
+
+inline void gl_errors(const char *where) {
+	GLenum err = 0;
+	while ((err = glGetError()) != GL_NO_ERROR) {
+		#define CHECK( ERR ) \
+			if (err == ERR) { \
+				warning("WARNING: gl error '" #ERR "' at %s.\n",where); \
+			} else
+
+		CHECK( GL_INVALID_ENUM )
+		CHECK( GL_INVALID_VALUE )
+		CHECK( GL_INVALID_OPERATION )
+		CHECK( GL_INVALID_FRAMEBUFFER_OPERATION )
+		CHECK( GL_OUT_OF_MEMORY )
+		CHECK( GL_STACK_UNDERFLOW )
+		CHECK( GL_STACK_OVERFLOW )
+		{
+			warning("WARNING: gl error #%d at %s.\n", (int)err, where); \
+		}
+		#undef CHECK
+	}
+}
+#define GL_ERRORS() gl_errors(__FILE__  ":" STR(__LINE__) )
+
+
+
+//------------------------
+
 static GLuint load_shader(char * fname, GLenum shader_type)
 {
 	char * shader_path;
@@ -378,6 +512,27 @@ static GLuint load_shader(char * fname, GLenum shader_type)
 	return ret;
 }
 #endif
+
+static GLuint compile_shader(GLenum shader_type, const char * name, const char * text)
+{
+	printf("%s\n-------\n%s-------\n", name, text); //DEBUG
+	GLuint ret = glCreateShader(shader_type);
+	GLint len = strlen(text);
+	glShaderSource(ret, 1, (const GLchar **)&text, (const GLint *)&len);
+	glCompileShader(ret);
+	GLint compile_status, loglen;
+	glGetShaderiv(ret, GL_COMPILE_STATUS, &compile_status);
+	if (!compile_status) {
+		glGetShaderiv(ret, GL_INFO_LOG_LENGTH, &loglen);
+		char *log = malloc(loglen);
+		glGetShaderInfoLog(ret, loglen, NULL, log);
+		warning("Shader %s failed to compile:\n%s\n", name, log);
+		free(log);
+		glDeleteShader(ret);
+		return 0;
+	}
+	return ret;
+}
 
 static uint32_t texture_buf[512 * 513];
 #ifdef DISABLE_OPENGL
@@ -447,6 +602,110 @@ static void gl_setup()
 	un_height = glGetUniformLocation(program, "height");
 	un_texsize = glGetUniformLocation(program, "texsize");
 	at_pos = glGetAttribLocation(program, "pos");
+	
+	//---------------------------------------------------
+	//overlay program
+
+	overlay_program.program = glCreateProgram();
+	GLuint vertex_shader = compile_shader(
+		GL_VERTEX_SHADER, "Overlay Vertex Shader",
+		"#version 330\n"
+		"uniform mat4 OBJECT_TO_CLIP;\n"
+		"uniform mat4x3 OBJECT_TO_LIGHT;\n"
+		"uniform mat3 NORMAL_TO_LIGHT;\n"
+		"in vec4 Position;\n"
+		"in vec3 Normal;\n"
+		"in vec4 Color;\n"
+		"out vec3 position;\n"
+		"out vec3 normal;\n"
+		"out vec4 color;\n"
+		"void main() {\n"
+		"	gl_Position = OBJECT_TO_CLIP * Position;\n"
+		"	position = OBJECT_TO_LIGHT * Position;\n"
+		"	normal = NORMAL_TO_LIGHT * Normal;\n"
+		"	color = Color;\n"
+		"}\n"
+	);
+	GLuint fragment_shader = compile_shader(
+		GL_FRAGMENT_SHADER, "Overlay Fragment Shader",
+		"#version 330\n"
+		"in vec3 position;\n"
+		"in vec3 normal;\n"
+		"in vec4 color;\n"
+		"out vec4 fragColor;\n"
+		"void main() {\n"
+		"	fragColor = vec4(normal * 0.5 + 0.5, 1.0);\n"
+		"}\n"
+	);
+
+	glAttachShader(overlay_program.program, vertex_shader);
+	glAttachShader(overlay_program.program, fragment_shader);
+
+	//shaders are reference counted so this makes sure they are freed after program is deleted:
+	glDeleteShader(vertex_shader);
+	glDeleteShader(fragment_shader);
+
+	glLinkProgram(overlay_program.program);
+	GLint status = GL_FALSE;
+	glGetProgramiv(overlay_program.program, GL_LINK_STATUS, &status);
+	if (status != GL_TRUE) {
+		GLint info_log_length = 0;
+		glGetProgramiv(overlay_program.program, GL_INFO_LOG_LENGTH, &info_log_length);
+		GLchar *info_log = malloc(info_log_length);
+		glGetProgramInfoLog(overlay_program.program, info_log_length, 0, info_log);
+		warning("Program %s failed to link:\n%s\n", "overlay_program", info_log);
+		free(info_log);
+		exit(1);
+	}
+
+	overlay_program.Position_vec4 = glGetAttribLocation(overlay_program.program, "Position");
+	overlay_program.Normal_vec4 = glGetAttribLocation(overlay_program.program, "Normal");
+	overlay_program.Color_vec4 = glGetAttribLocation(overlay_program.program, "Color");
+	overlay_program.OBJECT_TO_CLIP_mat4 = glGetUniformLocation(overlay_program.program, "OBJECT_TO_CLIP");
+	overlay_program.OBJECT_TO_LIGHT_mat4x3 = glGetUniformLocation(overlay_program.program, "OBJECT_TO_LIGHT");
+	overlay_program.NORMAL_TO_LIGHT_mat3 = glGetUniformLocation(overlay_program.program, "NORMAL_TO_LIGHT");
+	debug_message("overlay_program:%d, Position:%d, Normal:%d, Color:%d, OBJECT_TO_CLIP:%d, OBJECT_TO_LIGHT:%d, NORMAL_TO_LIGHT:%d\n", overlay_program.program, overlay_program.Position_vec4, overlay_program.Normal_vec4, overlay_program.Color_vec4, overlay_program.OBJECT_TO_CLIP_mat4, overlay_program.OBJECT_TO_LIGHT_mat4x3, overlay_program.NORMAL_TO_LIGHT_mat3); //DEBUG
+
+	//---------------------------------------------------
+	//attribs/buffer for overlay program
+
+	glGenBuffers(1, &overlay_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, overlay_buffer);
+
+	if (sizeof(struct OverlayAttrib) != 4*3+4*3+4*1) {
+		warning("OverlayAttrib structure is not packed!");
+		exit(1);
+	}
+
+	glGenVertexArrays(1, &overlay_buffer_for_overlay_program);
+	glBindVertexArray(overlay_buffer_for_overlay_program);
+
+	glVertexAttribPointer(overlay_program.Position_vec4,
+		3, GL_FLOAT, GL_FALSE,
+		sizeof(struct OverlayAttrib),
+		(GLbyte *)0 + offsetof(struct OverlayAttrib, Position)
+	);
+	glEnableVertexAttribArray(overlay_program.Position_vec4);
+
+	glVertexAttribPointer(overlay_program.Normal_vec4,
+		3, GL_FLOAT, GL_FALSE,
+		sizeof(struct OverlayAttrib),
+		(GLbyte *)0 + offsetof(struct OverlayAttrib, Normal)
+	);
+	glEnableVertexAttribArray(overlay_program.Normal_vec4);
+
+	glVertexAttribPointer(overlay_program.Color_vec4,
+		4, GL_UNSIGNED_BYTE, GL_TRUE,
+		sizeof(struct OverlayAttrib),
+		(GLbyte *)0 + offsetof(struct OverlayAttrib, Color)
+	);
+	glEnableVertexAttribArray(overlay_program.Color_vec4);
+
+
+	glBindVertexArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 }
 
 static void gl_teardown()
@@ -1066,11 +1325,26 @@ void window_setup(void)
 	if (gl_enabled)
 	{
 		flags |= SDL_WINDOW_OPENGL;
+		/*
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		*/
+
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+		/* TODO: maybe do something like this to make sure we have the fanciest stuff?
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+		*/
+
 #ifdef USE_GLES
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -1093,6 +1367,12 @@ void window_setup(void)
 		GLenum res = glewInit();
 		if (res != GLEW_OK) {
 			warning("Initialization of GLEW failed with code %d\n", res);
+		}
+		{ //info about context
+			int major_version, minor_version;
+			SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major_version);
+			SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &minor_version);
+			debug_message("Got OpenGL %d.%d context.\n", major_version, minor_version);
 		}
 
 		if (res == GLEW_OK && GLEW_VERSION_2_0) {
@@ -1525,12 +1805,92 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 		glBindTexture(GL_TEXTURE_2D, textures[which]);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, LINEBUF_SIZE, height, SRC_FORMAT, GL_UNSIGNED_BYTE, buffer + overscan_left[video_standard] + LINEBUF_SIZE * overscan_top[video_standard]);
 
+		#define MAX_ATTRIBS 1000000
+		static struct OverlayAttrib *attribs = NULL;
+		if (!attribs) attribs = calloc(sizeof(struct OverlayAttrib), MAX_ATTRIBS);
+		overlay_count = 0;
 		if (memory) {
 			//NOTE: Here is where to extract info for 3D overlay.
-			printf("P1 Rotation %d\n", (int32_t)((int16_t)memory[0x71C]));
+			//printf("P1 Rotation %d\n", (int32_t)((int16_t)memory[0x71C]));
+
+			//----------------------------------
+			//upload to GPU for display:
+			//set up viewing matrix:
+			float aspect = main_width / (float)main_height; //<--- hmmmmmmmm
+
+			//TODO: I really want to just use GLM for my matrix math -- maybe separate file?
+
+			GLfloat object_to_clip[16] = { //4x4, column major
+				1.0f / aspect * 0.01f, 0.0f, 0.0f, 0.0f,
+				0.0f, 0.0f,-1.0f * 0.01f, 0.0f,
+				0.0f, 1.0f * 0.01f, 0.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f
+			};
+			GLfloat object_to_light[14] = { //4x3, column major
+				1.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f,
+				0.0f, 0.0f, 1.0f,
+				0.0f, 0.0f, 0.0f,
+			};
+			GLfloat normal_to_light[9] = { //3x3, column major
+				1.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f,
+				0.0f, 0.0f, 1.0f,
+			};
+
+			glUseProgram(overlay_program.program);
+			if (overlay_program.OBJECT_TO_CLIP_mat4 != -1U) {
+				glUniformMatrix4fv(overlay_program.OBJECT_TO_CLIP_mat4, 1, GL_FALSE, object_to_clip);
+			}
+			if (overlay_program.OBJECT_TO_LIGHT_mat4x3 != -1U) {
+				glUniformMatrix4x3fv(overlay_program.OBJECT_TO_LIGHT_mat4x3, 1, GL_FALSE, object_to_light);
+			}
+			if (overlay_program.NORMAL_TO_LIGHT_mat3 != -1U) {
+				glUniformMatrix3fv(overlay_program.NORMAL_TO_LIGHT_mat3, 1, GL_FALSE, normal_to_light);
+			}
+			glUseProgram(0);
+			GL_ERRORS();
+
+			add_sphere(attribs, &overlay_count, 
+				0.0f, 0.0f, 0.0f, 0.5f,
+				0xff, 0x00, 0xff, 0xff
+			);
+
+			add_sphere(attribs, &overlay_count, 
+				2.0f, 0.0f, 0.0f, 0.5f,
+				0xff, 0x00, 0x00, 0xff
+			);
+
+			add_sphere(attribs, &overlay_count, 
+				0.0f, 2.0f, 0.0f, 0.5f,
+				0xff, 0x00, 0x00, 0xff
+			);
+
+			uint8_t *bytes = (uint8_t *)memory;
+
+			int16_t *xyz = (int16_t *)(bytes + 0x874);
+			uint8_t *color_radius = (uint8_t *)(bytes + 0xA54);
+
+			for (uint32_t ball = 0; ball < 31; ++ball) {
+				float x = xyz[3*ball+0];
+				float y = xyz[3*ball+1];
+				float z = xyz[3*ball+2];
+				float radius = 0.25f * color_radius[2*ball+1];
+				add_sphere(attribs, &overlay_count,
+					x,y,z,
+					radius,
+					0xff, 0xff, 0xff, 0xff
+				);
+			}
 		} else {
 			printf("(no memory)\n");
 		}
+		if (overlay_count > 0) {
+			glBindBuffer(GL_ARRAY_BUFFER, overlay_buffer);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(struct OverlayAttrib) * overlay_count, attribs, GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
+
 		
 		if (screenshot_file) {
 			//properly supporting interlaced modes here is non-trivial, so only save the odd field for now
@@ -1784,7 +2144,7 @@ void render_update_display()
 #ifndef DISABLE_OPENGL
 	if (render_gl) {
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(program);
 		glActiveTexture(GL_TEXTURE0);
@@ -1807,6 +2167,27 @@ void render_update_display()
 		glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (void *)0);
 
 		glDisableVertexAttribArray(at_pos);
+
+		//-------------------------------------
+		//Render overlay:
+		GL_ERRORS();
+		if (overlay_count != 0) {
+			glEnable(GL_DEPTH_TEST);
+			glUseProgram(overlay_program.program);
+			glBindVertexArray(overlay_buffer_for_overlay_program);
+
+			//glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+			//glClear(GL_COLOR_BUFFER_BIT);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, overlay_count);
+
+			glBindVertexArray(0);
+			glUseProgram(0);
+
+			glDisable(GL_DEPTH_TEST);
+			GL_ERRORS();
+		}
+		
+		//-------------------------------------
 		
 		if (render_ui) {
 			render_ui();
