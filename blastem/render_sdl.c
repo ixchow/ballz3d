@@ -291,7 +291,7 @@ void render_set_external_sync(uint8_t ext_sync_on)
 }
 
 #ifndef DISABLE_OPENGL
-static GLuint textures[3], buffers[2], vshader, fshader, program, un_textures[2], un_width, un_height, un_texsize, at_pos;
+static GLuint textures[3], buffers[2], vshader, fshader, program, un_textures[2], un_width, un_height, un_texsize, at_pos, default_vertex_array;
 static int tex_width, tex_height;
 
 static GLfloat vertex_data_default[] = {
@@ -577,6 +577,8 @@ static void gl_setup()
 			glTexImage2D(GL_TEXTURE_2D, 0, INTERNAL_FORMAT, 1, 1, 0, SRC_FORMAT, GL_UNSIGNED_BYTE, &blank);
 		}
 	}
+	glGenVertexArrays(1, &default_vertex_array);
+	glBindVertexArray(default_vertex_array);
 	glGenBuffers(2, buffers);
 	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
@@ -1342,11 +1344,9 @@ void window_setup(void)
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-		/* TODO: maybe do something like this to make sure we have the fanciest stuff?
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-		*/
 
 #ifdef USE_GLES
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
@@ -2342,6 +2342,8 @@ void render_update_display()
 	if (render_gl) {
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glBindVertexArray(default_vertex_array);
 
 		glUseProgram(program);
 		glActiveTexture(GL_TEXTURE0);
