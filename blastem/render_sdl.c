@@ -2379,7 +2379,7 @@ void render_update_display()
 			//glClear(GL_COLOR_BUFFER_BIT);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, overlay_count);
 
-			glBindVertexArray(0);
+			glBindVertexArray(default_vertex_array);
 			glUseProgram(0);
 
 			glDisable(GL_DEPTH_TEST);
