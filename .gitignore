@@ -1,3 +1,9 @@
 blastem/.hg
 blastem/.hgignore
 blastem/.hgtags
+*.o
+blastem/blastem
+blastem/dis
+blastem/vgmplay
+blastem/zdis
+blastem/termhelper
