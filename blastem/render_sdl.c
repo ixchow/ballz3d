@@ -1482,7 +1482,7 @@ uint8_t events_processed;
 
 static uint32_t last_width, last_height;
 static uint8_t interlaced;
-static void process_framebuffer(uint32_t *buffer, uint8_t which, int width)
+static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint16_t *memory)
 {
 	static uint8_t last;
 	if (sync_src == SYNC_VIDEO && which <= FRAMEBUFFER_EVEN && source_frame_count < 0) {
@@ -1524,6 +1524,13 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width)
 		SDL_GL_MakeCurrent(main_window, main_context);
 		glBindTexture(GL_TEXTURE_2D, textures[which]);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, LINEBUF_SIZE, height, SRC_FORMAT, GL_UNSIGNED_BYTE, buffer + overscan_left[video_standard] + LINEBUF_SIZE * overscan_top[video_standard]);
+
+		if (memory) {
+			//NOTE: Here is where to extract info for 3D overlay.
+			printf("P1 Rotation %d\n", (int32_t)((int16_t)memory[0x71C]));
+		} else {
+			printf("(no memory)\n");
+		}
 		
 		if (screenshot_file) {
 			//properly supporting interlaced modes here is non-trivial, so only save the odd field for now
@@ -1684,12 +1691,19 @@ typedef struct {
 	uint32_t *buffer;
 	int      width;
 	uint8_t  which;
+	uint16_t memory[32 * 1024]; //snapshot of system memory during this frame
 } frame;
 frame frame_queue[4];
 int frame_queue_len, frame_queue_read, frame_queue_write;
 
 void render_framebuffer_updated(uint8_t which, int width)
 {
+	uint16_t *memory = NULL;
+	if (current_system && current_system->type == SYSTEM_GENESIS) { //grab all of main memory "just in case":
+		genesis_context *gen = (genesis_context *)current_system;
+		memory = gen->work_ram;
+	}
+
 	if (sync_src == SYNC_AUDIO_THREAD || sync_src == SYNC_EXTERNAL) {
 		SDL_LockMutex(frame_mutex);
 			while (frame_queue_len == 4) {
@@ -1711,11 +1725,13 @@ void render_framebuffer_updated(uint8_t which, int width)
 				}
 				cur = (cur + 1) & 3;
 			}
-			frame_queue[frame_queue_write++] = (frame){
-				.buffer = locked_pixels,
-				.width = width,
-				.which = which
-			};
+			frame_queue[frame_queue_write].buffer = locked_pixels;
+			frame_queue[frame_queue_write].width = width;
+			frame_queue[frame_queue_write].which = which;
+			if (memory) {
+				memcpy(frame_queue[frame_queue_write].memory, memory, 64*1024);
+			}
+			frame_queue_write += 1;
 			frame_queue_write &= 0x3;
 			frame_queue_len++;
 			SDL_CondSignal(frame_ready);
@@ -1723,7 +1739,7 @@ void render_framebuffer_updated(uint8_t which, int width)
 		return;
 	}
 	//TODO: Maybe fixme for render API
-	process_framebuffer(texture_buf, which, width);
+	process_framebuffer(texture_buf, which, width, memory);
 }
 
 void render_video_loop(void)
@@ -1745,7 +1761,7 @@ void render_video_loop(void)
 				frame_queue_read &= 0x3;
 				frame_queue_len--;
 				SDL_UnlockMutex(frame_mutex);
-				process_framebuffer(f.buffer, f.which, f.width);
+				process_framebuffer(f.buffer, f.which, f.width, f.memory);
 				release_buffer(f.buffer);
 				SDL_LockMutex(frame_mutex);
 			}
