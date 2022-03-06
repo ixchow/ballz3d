@@ -1890,6 +1890,40 @@ static void draw_player(struct OverlayAttrib *attribs, uint32_t *attribs_count,
 	*/
 }
 
+
+//Camera control structure, starts at 0x11C8 during gameplay; starts at 0x118a during demos
+struct __attribute__((__packed__)) Camera {
+	//0x11C8
+	uint16_t azimuth_degrees; //[0,360)
+	int16_t sin_azimuth; //0.16 fixed point
+	int16_t cos_azimuth; //0.16 fixed point
+
+	//0x11CE:
+	uint16_t elevation_degrees; //[0,360) though a lot of angles actually cause crashes
+	int16_t sin_elevation; //0.16 fixed point
+	int16_t cos_elevation; //0.16 fixed point
+
+	//0x11D4:
+	uint16_t focal_length; //...something FOV-related at least. smaller = wider image
+	int16_t radius; //distance from camera target along z direction
+
+	//these appear to be recomputed when camera moves:
+	//0x11D8: right vector (always has z=0)
+	int16_t rx, ry;
+	//int16_t rz not stored; assumed to be 0
+
+	//0x11DC: up vector
+	int16_t ux, uy, uz;
+	//0x11E2: in (out?) vector
+	int16_t ix, iy, iz;
+
+	int16_t pad[(0x11f2 - 0x11e8)/2]; //0x11ea - 0x11f0: not sure!
+
+	//0x11f2: camera center:
+	int16_t cx, cy, cz;
+};
+
+
 static uint32_t last_width, last_height;
 static uint8_t interlaced;
 static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint16_t *memory)
@@ -1964,7 +1998,51 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 				add_sphere(attribs, &overlay_count, cx,cy,cz, 1.0f, 0xff, 0x00, 0xff, 0xff);
 			}
 
-			//TODO: pull camera positioning data from memory!
+			{ //pull camera positioning data from memory!
+				struct Camera const *camera = (struct Camera const *)(bytes + 0x11c8);
+				if (offsetof(struct Camera, cx) != 0x11f2 - 0x11c8) {
+					warning("Camera padding not correctly sized; cx is at offset %x, expected %x\n", offsetof(struct Camera, cx) + 0x11c8, 0x11f2);
+					exit(1);
+				}
+
+				#define CHECK_OFFSET( name, offset ) \
+					if (offsetof(struct Camera, name) != offset - 0x11c8) { \
+						warning("Camera " #name " at the wrong offset %x, expected %x\n", offsetof(struct Camera, name) + 0x11c8, offset); \
+						exit(1); \
+					}
+
+				CHECK_OFFSET( azimuth_degrees, 0x11c8 );
+				CHECK_OFFSET( sin_azimuth, 0x11ca );
+				CHECK_OFFSET( elevation_degrees, 0x11ce );
+				CHECK_OFFSET( focal_length, 0x11d4 );
+				CHECK_OFFSET( rx, 0x11d8 );
+
+				/*add_sphere(attribs, &overlay_count, camera->cx,camera->cy,camera->cz, 1.0f, 0xff, 0x00, 0xff, 0xff);
+				add_sphere(attribs, &overlay_count, camera->cx/2.0f,camera->cy/2.0f,camera->cz/2.0f, 1.0f, 0xff, 0x00, 0xff, 0xff);
+				add_sphere(attribs, &overlay_count, camera->cx/4.0f,camera->cy/4.0f,camera->cz/4.0f, 1.0f, 0xff, 0x00, 0xff, 0xff);
+				add_sphere(attribs, &overlay_count, camera->cx/8.0f,camera->cy/8.0f,camera->cz/8.0f, 1.0f, 0xff, 0x00, 0xff, 0xff);
+				*/
+
+				float scale_len = 1.0f; //DEBUG; though 1.0f also seems wrong?
+				float scale_dir = 1.0f / 0x3fff;
+
+				cam_target[0] = scale_len * camera->cx;
+				cam_target[1] = scale_len * camera->cy;
+				cam_target[2] = scale_len * camera->cz;
+
+				float r = camera->radius;
+				cam_at[0] = cam_target[0] - r * scale_dir * camera->ix;
+				cam_at[1] = cam_target[1] - r * scale_dir * camera->iy;
+				cam_at[2] = cam_target[2] - r * scale_dir * camera->iz;
+
+				cam_up[0] = scale_dir * camera->ux;
+				cam_up[1] = scale_dir * camera->uy;
+				cam_up[2] = scale_dir * camera->uz;
+
+				//DEBUG:
+				warning("[ %x %x 0 ]\n[ %x %x %x ]\n[ %x %x %x ]\n", camera->rx, camera->ry, camera->ux, camera->uy, camera->uz, camera->ix, camera->iy, camera->iz); //DEBUG
+				warning("Camera at %f %f %f looking at %f %f %f\n", cam_at[0], cam_at[1], cam_at[2], cam_target[0], cam_target[1], cam_target[2]);
+			}
 
 			{ //camera setup (based on variables above)
 				float cam_out[3] = { cam_at[0] - cam_target[0], cam_at[1] - cam_target[1], cam_at[2] - cam_target[2] };
@@ -1980,12 +2058,33 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 					cam_up[0]*cam_out[1] - cam_up[1]*cam_out[0]
 				};
 
+				/*//TEST: flip x axis:
+				cam_right[0] = -cam_right[0];
+				cam_right[1] = -cam_right[1];
+				cam_right[2] = -cam_right[2];
+				*/
+
 				GLfloat lookat[16] = { //4x4, column major
 					cam_right[0],cam_up[0],cam_out[0], 0.0f,
 					cam_right[1],cam_up[1],cam_out[1], 0.0f,
 					cam_right[2],cam_up[2],cam_out[2], 0.0f,
 					-dot(cam_right,cam_at), -dot(cam_up,cam_at),-dot(cam_out,cam_at), 1.0f
 				};
+
+
+				/*//TEST: flip y axis:
+				lookat[1] = -lookat[1];
+				lookat[5] = -lookat[5];
+				lookat[9] = -lookat[9];
+				lookat[13] = -lookat[13];
+				*/
+
+				/*//TEST: flip z axis also:
+				lookat[2] = -lookat[2];
+				lookat[6] = -lookat[6];
+				lookat[10] = -lookat[10];
+				lookat[14] = -lookat[14];
+				*/
 
 				/*debug_message("l[%f %f %f %f\n %f %f %f %f\n %f %f %f %f\n %f %f %f %f]\n",
 					lookat[0], lookat[4], lookat[8], lookat[12],
@@ -2341,6 +2440,8 @@ void render_update_display()
 #ifndef DISABLE_OPENGL
 	if (render_gl) {
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		//glDepthFunc(GL_GREATER); //DEBUG
+		//glClearDepth(0.0f); //DEBUG
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glBindVertexArray(default_vertex_array);
