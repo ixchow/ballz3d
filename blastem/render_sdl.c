@@ -4,6 +4,7 @@
  BlastEm is free software distributed under the terms of the GNU General Public License version 3 or greater. See COPYING for full license text.
 */
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -328,6 +329,8 @@ static struct OverlayProgram {
 	GLuint OBJECT_TO_CLIP_mat4;
 	GLuint OBJECT_TO_LIGHT_mat4x3;
 	GLuint NORMAL_TO_LIGHT_mat3;
+	
+	//"background": texture 0
 } overlay_program;
 
 static GLuint overlay_buffer_for_overlay_program = 0;
@@ -422,7 +425,7 @@ static inline void add_sphere(
 #define STR2(X) # X
 #define STR(X) STR2(X)
 
-inline void gl_errors(const char *where) {
+void gl_errors(const char *where) {
 	GLenum err = 0;
 	while ((err = glGetError()) != GL_NO_ERROR) {
 		#define CHECK( ERR ) \
@@ -634,12 +637,16 @@ static void gl_setup()
 		"in vec3 position;\n"
 		"in vec3 normal;\n"
 		"in vec4 color;\n"
+		"uniform sampler2D BG;\n"
 		"out vec4 fragColor;\n"
 		"void main() {\n"
 		"	vec3 n = normalize(normal);\n"
 		"	vec3 l = vec3(0.0, 0.0, 1.0);\n"
 		"	float e = 0.5 * dot(n,l) + 0.5;\n"
-		"	fragColor = vec4(color.rgb * e, color.a);\n"
+		"	vec3 refl = normalize(reflect(position, normal));\n"
+		"	vec3 refl_color = texture(BG, refl.xy * vec2(0.25, 0.25) + vec2(0.75,0.25) ).rgb;\n"
+		"	fragColor = vec4(color.rgb * e + refl_color * 0.5, color.a);\n"
+		//"	fragColor = vec4(texture(BG, n.xy).rgb * e, color.a);\n"
 		"}\n"
 	);
 
@@ -669,6 +676,12 @@ static void gl_setup()
 	overlay_program.OBJECT_TO_CLIP_mat4 = glGetUniformLocation(overlay_program.program, "OBJECT_TO_CLIP");
 	overlay_program.OBJECT_TO_LIGHT_mat4x3 = glGetUniformLocation(overlay_program.program, "OBJECT_TO_LIGHT");
 	overlay_program.NORMAL_TO_LIGHT_mat3 = glGetUniformLocation(overlay_program.program, "NORMAL_TO_LIGHT");
+
+	glUseProgram(overlay_program.program);
+	GLuint BG_sampler2D = glGetUniformLocation(overlay_program.program, "BG");
+	glUniform1i(BG_sampler2D, 0);
+	glUseProgram(0);
+
 	debug_message("overlay_program:%d, Position:%d, Normal:%d, Color:%d, OBJECT_TO_CLIP:%d, OBJECT_TO_LIGHT:%d, NORMAL_TO_LIGHT:%d\n", overlay_program.program, overlay_program.Position_vec4, overlay_program.Normal_vec4, overlay_program.Color_vec4, overlay_program.OBJECT_TO_CLIP_mat4, overlay_program.OBJECT_TO_LIGHT_mat4x3, overlay_program.NORMAL_TO_LIGHT_mat3); //DEBUG
 
 	//---------------------------------------------------
@@ -1067,6 +1080,10 @@ int lock_joystick_index(int joystick, int desired_index)
 	return desired_index;
 }
 
+float hack_num = 120.0f;
+
+extern bool hide_all_sprites;
+
 static int32_t handle_event(SDL_Event *event)
 {
 	if (custom_event_handler) {
@@ -1074,7 +1091,11 @@ static int32_t handle_event(SDL_Event *event)
 	}
 	switch (event->type) {
 	case SDL_KEYDOWN:
-		handle_keydown(event->key.keysym.sym, scancode_map[event->key.keysym.scancode]);
+		//HACK:
+		if (event->key.keysym.sym == SDLK_1) hack_num += 1;
+		else if (event->key.keysym.sym == SDLK_2) hack_num -= 1;
+		else if (event->key.keysym.sym == SDLK_r) hide_all_sprites = !hide_all_sprites;
+		else handle_keydown(event->key.keysym.sym, scancode_map[event->key.keysym.scancode]);
 		break;
 	case SDL_KEYUP:
 		handle_keyup(event->key.keysym.sym, scancode_map[event->key.keysym.scancode]);
@@ -1768,7 +1789,7 @@ inline float dot(float a[3], float b[3]) {
 	return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 }
 
-inline void normalize(float a[3]) {
+void normalize(float a[3]) {
 	float inv_len = 1.0f / sqrt(dot(a,a));
 	a[0] *= inv_len;
 	a[1] *= inv_len;
@@ -1790,7 +1811,18 @@ struct Player {
 	int16_t at_z; //0x728
 	int16_t at_z_frac; //0x72A  (NOTE: not checked/used?)
 
-	int16_t pad2[(0x874 - 0x72C)/2]; //0x72C - 0x872
+	int16_t pad2a[(0x74c - 0x72C)/2]; //0x72C - 0x872
+
+	uint16_t balls_count; //0x74c
+
+	int16_t pad2b[(0x752 - 0x74e)/2]; //0x72C - 0x872
+
+	//these are used to offset the ball locations:
+	int16_t offset_x; //0x752
+	int16_t offset_y; //0x754
+	int16_t offset_z; //0x756
+
+	int16_t pad2c[(0x874 - 0x758)/2];
 
 	struct __attribute__((__packed__)) XYZ {
 		int16_t x;
@@ -1804,92 +1836,7 @@ struct Player {
 		uint8_t color;
 		uint8_t radius;
 	} color_radius[28]; //0xA54-0xA96
-
 };
-
-static void draw_player(struct OverlayAttrib *attribs, uint32_t *attribs_count,
-	uint8_t *bytes, uint8_t R, uint8_t G, uint8_t B) {
-
-	//some paranoia about player structure layout:
-	if (offsetof(struct Player, balls) != 0x874 - 0x716) {
-		warning("Wrong structure shape -- balls is at %x\n", offsetof(struct Player, balls));
-		exit(1);
-	}
-
-	if (offsetof(struct Player, color_radius) != 0xa54 - 0x716) {
-		warning("Wrong structure shape -- color_radius is at %x wanted %x\n", offsetof(struct Player, color_radius), 0xa54 - 0x716);
-		exit(1);
-	}
-
-
-	struct Player *player = (struct Player *)(bytes + 0x716);
-
-	float px = player->at_x;
-	//px += *(int16_t * )(bytes + 0x720 + 2) / (float)(0x10000); //Maybe?
-	float py = player->at_y;
-	//py += *(int16_t * )(bytes + 0x720 + 6) / (float)(0x10000); //Maybe?
-	float pz = player->at_z;
-	//pz += *(int16_t * )(bytes + 0x720 + 10) / (float)(0x10000); //Maybe?
-
-	float fx = player->forward_x / (float)(0x8000);
-	float fy = player->forward_y / (float)(0x8000);
-
-	float rx = -fy;
-	float ry = fx;
-
-	px *= 0.5f; py *= 0.5f; pz *= 0.5f;
-
-	for (uint32_t ball = 0; ball < 28; ++ball) {
-		float x = player->balls[ball].x;
-		float y = player->balls[ball].y;
-		float z = player->balls[ball].z;
-
-		float radius = 0.25f * player->color_radius[ball].radius;
-		add_sphere(attribs, attribs_count,
-			px + rx * x + fx * y,
-			py + ry * x + fy * y,
-			pz + z,
-			radius,
-			R, G, B, 0xff
-		);
-	}
-
-	/* old draw code which uses offsets instead of structre:
-	int16_t *xyz = (int16_t *)(bytes + 0x874);
-	uint8_t *color_radius = (uint8_t *)(bytes + 0xA54);
-
-	float px = *(int16_t *)(bytes + 0x720);
-	//px += *(int16_t * )(bytes + 0x720 + 2) / (float)(0x10000); //Maybe?
-	float py = *(int16_t *)(bytes + 0x720 + 4);
-	//py += *(int16_t * )(bytes + 0x720 + 6) / (float)(0x10000); //Maybe?
-	float pz = *(int16_t *)(bytes + 0x720 + 8);
-	//pz += *(int16_t * )(bytes + 0x720 + 10) / (float)(0x10000); //Maybe?
-
-	float fx = *(int16_t *)(bytes + 0x71C) / (float)(0x8000);
-	float fy = *(int16_t *)(bytes + 0x71E) / (float)(0x8000);
-
-	float rx = -fy;
-	float ry = fx;
-
-	px *= 0.5f; py *= 0.5f; pz *= 0.5f;
-
-	for (uint32_t ball = 0; ball < 30; ++ball) {
-		float x = xyz[3*ball+0];
-		float y = xyz[3*ball+1];
-		float z = xyz[3*ball+2];
-
-		float radius = 0.25f * color_radius[2*ball+1];
-		add_sphere(attribs, attribs_count,
-			px + rx * x + fx * y,
-			py + ry * x + fy * y,
-			pz + z,
-			radius,
-			R, G, B, 0xff
-		);
-	}
-	*/
-}
-
 
 //Camera control structure, starts at 0x11C8 during gameplay; starts at 0x118a during demos
 struct __attribute__((__packed__)) Camera {
@@ -1922,6 +1869,74 @@ struct __attribute__((__packed__)) Camera {
 	//0x11f2: camera center:
 	int16_t cx, cy, cz;
 };
+
+
+static void draw_player(struct OverlayAttrib *attribs, uint32_t *attribs_count,
+	const struct Player *player, const struct Camera *camera,
+	uint8_t R, uint8_t G, uint8_t B) {
+
+	//some paranoia about player structure layout:
+	if (offsetof(struct Player, offset_x) != 0x3c) {
+		warning("Wrong structure shape -- offset_x is at %x\n", offsetof(struct Player, offset_x));
+		exit(1);
+	}
+
+	if (offsetof(struct Player, balls) != 0x874 - 0x716) {
+		warning("Wrong structure shape -- balls is at %x\n", offsetof(struct Player, balls));
+		exit(1);
+	}
+
+	if (offsetof(struct Player, color_radius) != 0xa54 - 0x716) {
+		warning("Wrong structure shape -- color_radius is at %x wanted %x\n", offsetof(struct Player, color_radius), 0xa54 - 0x716);
+		exit(1);
+	}
+
+	float fx = player->forward_x;
+	float fy = player->forward_y;
+
+	float ox = player->offset_x;
+	float oy = player->offset_y;
+	float oz = player->offset_z;
+
+	/*
+	float rx = -fy;
+	float ry = fx;
+
+	px *= 0.5f; py *= 0.5f; pz *= 0.5f;
+	*/
+
+	for (uint32_t ball = 0; ball < player->balls_count; ++ball) {
+		float lx = player->balls[ball].x;
+		float ly = player->balls[ball].y;
+		float lz = player->balls[ball].z;
+
+		float x = (fy * lx - fx * ly) / (float)(1 << 14);
+		float y = (fx * lx + fy * ly) / (float)(1 << 14);
+		float z = lz * 2.0f;
+
+		x += ox;
+		y += oy;
+		z += oz;
+
+		float wx = (float)(camera->rx) * x + (float)(camera->ry) * y;
+		float wy = (float)(camera->ux) * x + (float)(camera->uy) * y + (float)(camera->uz) * z;
+		float wz = (float)(camera->ix) * x + (float)(camera->iy) * y + (float)(camera->iz) * z;
+
+		wx /= (float)(1 << 14);
+		wy /= (float)(1 << 14);
+		wz /= (float)(1 << 14);
+
+		//warning("world: %f, %f, %f\n", wx, wy, wz); //DEBUG
+
+		float radius = 0.6f * player->color_radius[ball].radius;
+		add_sphere(attribs, attribs_count,
+			wx, wy, wz,
+			radius,
+			R, G, B, 0xff
+		);
+	}
+
+}
 
 
 static uint32_t last_width, last_height;
@@ -1986,16 +2001,28 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 
 			uint8_t *bytes = (uint8_t *)memory;
 
-			float cam_at[3] = {500.0f, 0.0f, 500.0f};
-			float cam_target[3] = {0.0f, 0.0f, 0.0f};
-			float cam_up[3] = {0.0f, 0.0f, 1.0f};
 
-			{
+			float cam_at[3] = {0.0f, 0.0f, 400.0f};
+			float cam_target[3] = {0.0f, 0.0f, 0.0f};
+			float cam_up[3] = {0.0f, 1.0f, 0.0f};
+
+			/*{
 				float cx = *(int16_t *)(bytes + 0x11F2);
 				float cy = *(int16_t *)(bytes + 0x11F4);
 				float cz = *(int16_t *)(bytes + 0x11F6);
 
 				add_sphere(attribs, &overlay_count, cx,cy,cz, 1.0f, 0xff, 0x00, 0xff, 0xff);
+			}*/
+
+			
+			struct Camera *camera;
+			warning("camera mode %d\n", (int)(*(uint16_t *)(bytes + 0x33bc))); //DEBUG
+			if (*(uint16_t *)(bytes + 0x33bc) < 2) {
+				//warning("standard camera\n");
+				camera = (struct Camera *)(bytes + 0x11c8);
+			} else {
+				//warning("demo camera\n");
+				camera = (struct Camera *)(bytes + 0x118a);
 			}
 
 			{ //pull camera positioning data from memory!
@@ -2017,31 +2044,13 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 				CHECK_OFFSET( focal_length, 0x11d4 );
 				CHECK_OFFSET( rx, 0x11d8 );
 
-				/*add_sphere(attribs, &overlay_count, camera->cx,camera->cy,camera->cz, 1.0f, 0xff, 0x00, 0xff, 0xff);
-				add_sphere(attribs, &overlay_count, camera->cx/2.0f,camera->cy/2.0f,camera->cz/2.0f, 1.0f, 0xff, 0x00, 0xff, 0xff);
-				add_sphere(attribs, &overlay_count, camera->cx/4.0f,camera->cy/4.0f,camera->cz/4.0f, 1.0f, 0xff, 0x00, 0xff, 0xff);
-				add_sphere(attribs, &overlay_count, camera->cx/8.0f,camera->cy/8.0f,camera->cz/8.0f, 1.0f, 0xff, 0x00, 0xff, 0xff);
-				*/
+				cam_at[0] = 0.0f;
+				cam_at[1] = 0.0f;
+				cam_at[2] = -camera->radius;
 
-				float scale_len = 1.0f; //DEBUG; though 1.0f also seems wrong?
-				float scale_dir = 1.0f / 0x3fff;
-
-				cam_target[0] = scale_len * camera->cx;
-				cam_target[1] = scale_len * camera->cy;
-				cam_target[2] = scale_len * camera->cz;
-
-				float r = camera->radius;
-				cam_at[0] = cam_target[0] - r * scale_dir * camera->ix;
-				cam_at[1] = cam_target[1] - r * scale_dir * camera->iy;
-				cam_at[2] = cam_target[2] - r * scale_dir * camera->iz;
-
-				cam_up[0] = scale_dir * camera->ux;
-				cam_up[1] = scale_dir * camera->uy;
-				cam_up[2] = scale_dir * camera->uz;
-
-				//DEBUG:
-				warning("[ %x %x 0 ]\n[ %x %x %x ]\n[ %x %x %x ]\n", camera->rx, camera->ry, camera->ux, camera->uy, camera->uz, camera->ix, camera->iy, camera->iz); //DEBUG
-				warning("Camera at %f %f %f looking at %f %f %f\n", cam_at[0], cam_at[1], cam_at[2], cam_target[0], cam_target[1], cam_target[2]);
+				//120.0f seems about right
+				fovy = 2.0f * atan( 120.0f / camera->focal_length ); //something like this?
+				//warning("focal_length: %f, fov_num: %f, fovy: %f\n", (float)camera->focal_length, fov_num, (float)fovy);
 			}
 
 			{ //camera setup (based on variables above)
@@ -2058,41 +2067,12 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 					cam_up[0]*cam_out[1] - cam_up[1]*cam_out[0]
 				};
 
-				/*//TEST: flip x axis:
-				cam_right[0] = -cam_right[0];
-				cam_right[1] = -cam_right[1];
-				cam_right[2] = -cam_right[2];
-				*/
-
 				GLfloat lookat[16] = { //4x4, column major
 					cam_right[0],cam_up[0],cam_out[0], 0.0f,
 					cam_right[1],cam_up[1],cam_out[1], 0.0f,
 					cam_right[2],cam_up[2],cam_out[2], 0.0f,
 					-dot(cam_right,cam_at), -dot(cam_up,cam_at),-dot(cam_out,cam_at), 1.0f
 				};
-
-
-				/*//TEST: flip y axis:
-				lookat[1] = -lookat[1];
-				lookat[5] = -lookat[5];
-				lookat[9] = -lookat[9];
-				lookat[13] = -lookat[13];
-				*/
-
-				/*//TEST: flip z axis also:
-				lookat[2] = -lookat[2];
-				lookat[6] = -lookat[6];
-				lookat[10] = -lookat[10];
-				lookat[14] = -lookat[14];
-				*/
-
-				/*debug_message("l[%f %f %f %f\n %f %f %f %f\n %f %f %f %f\n %f %f %f %f]\n",
-					lookat[0], lookat[4], lookat[8], lookat[12],
-					lookat[1], lookat[5], lookat[9], lookat[13],
-					lookat[2], lookat[6], lookat[10], lookat[14],
-					lookat[3], lookat[7], lookat[11], lookat[15]
-				);*/
-
 
 				//based on glm::infinitePerspective ( https://github.com/g-truc/glm/blob/master/glm/ext/matrix_clip_space.inl ):
 				float range = tan(fovy / 2.0f) * zNear;
@@ -2106,6 +2086,10 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 					0.0f, 0.0f, -1.0f, -1.0f,
 					0.0f, 0.0f, -2.0f * zNear, 0.0f
 				};
+
+				//DEBUG: flip x,y:
+				perspective[0*4+0] *= -1.0f;
+				perspective[1*4+1] *= -1.0f;
 
 				/*
 				//DEBUG: NO perspective!
@@ -2168,15 +2152,20 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 				GL_ERRORS();
 			}
 
+			/*
 			add_sphere(attribs, &overlay_count, 0.0f, 0.0f, 0.0f, 1.0f, 0xff, 0xff, 0xff, 0xff);
 			add_sphere(attribs, &overlay_count, 1.0f, 0.0f, 0.0f, 1.0f, 0xff, 0x00, 0x00, 0xff);
 			add_sphere(attribs, &overlay_count, 0.0f, 1.0f, 0.0f, 1.0f, 0x00, 0xff, 0x00, 0xff);
 			add_sphere(attribs, &overlay_count, 0.0f, 0.0f, 1.0f, 1.0f, 0x00, 0x00, 0xff, 0xff);
+			*/
 
-			//player 1:
-			draw_player(attribs, &overlay_count, bytes, 0xff, 0xff, 0xff);
-			//player 2:
-			draw_player(attribs, &overlay_count, bytes + (0xf8e - 0xa54), 0xff, 0x00, 0xff);
+			//get balls for players:
+			struct Player *player1 = (struct Player *)(bytes + 0x716);
+			struct Player *player2 = (struct Player *)(bytes + 0xc50);
+			warning("Player 1 balls: %d, Player 2 balls: %d\n", (int)player1->balls_count, (int)player2->balls_count); //TEST
+			draw_player(attribs, &overlay_count, player1, camera, 0xff, 0x88, 0x88);
+			draw_player(attribs, &overlay_count, player2, camera, 0x88, 0x88, 0xff);
+			//draw_player(attribs, &overlay_count, bytes + (0xf8e - 0xa54), 0xff, 0x00, 0xff);
 
 		} else {
 			printf("(no memory)\n");

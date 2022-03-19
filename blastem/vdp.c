@@ -11,6 +11,7 @@
 #include "util.h"
 #include "event_log.h"
 #include "terminal.h"
+#include <stdbool.h>
 
 #define NTSC_INACTIVE_START 224
 #define PAL_INACTIVE_START 240
@@ -287,6 +288,8 @@ static void increment_address(vdp_context *context)
 	}
 }
 
+bool hide_all_sprites = false;
+
 static void render_sprite_cells(vdp_context * context)
 {
 	if (context->cur_slot > MAX_SPRITES_LINE) {
@@ -296,6 +299,8 @@ static void render_sprite_cells(vdp_context * context)
 	if (context->cur_slot < 0) {
 		return;
 	}
+	if (hide_all_sprites) return;
+
 	sprite_draw * d = context->sprite_draw_list + context->cur_slot;
 	uint16_t address = d->address;
 	address += context->sprite_x_offset * d->height * 4;
