@@ -11,6 +11,7 @@
    sodipodi:docname="genesis-does-1.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <sodipodi:namedview
@@ -24,13 +25,13 @@
      inkscape:document-units="in"
      showgrid="false"
      units="in"
-     inkscape:zoom="1.0998546"
-     inkscape:cx="806.47023"
-     inkscape:cy="491.8832"
+     inkscape:zoom="0.77771465"
+     inkscape:cx="660.91079"
+     inkscape:cy="636.48023"
      inkscape:window-width="2615"
      inkscape:window-height="1748"
-     inkscape:window-x="394"
-     inkscape:window-y="145"
+     inkscape:window-x="396"
+     inkscape:window-y="256"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer2" />
   <defs
@@ -72,6 +73,28 @@
          stdDeviation="1.1800701"
          id="feGaussianBlur168531" />
     </filter>
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter223908"
+       x="-0.12767448"
+       y="-0.10789796"
+       width="1.255349"
+       height="1.2157959">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="4.4960834"
+         id="feGaussianBlur223910" />
+    </filter>
+    <mask
+       maskUnits="userSpaceOnUse"
+       id="mask224320">
+      <path
+         style="mix-blend-mode:normal;fill:#ffffff;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter223908)"
+         d="m 397.90038,163.91713 19.39827,7.4183 0.99226,52.89152 -6.26591,38.00867 -56.72359,1.68896 -21.527,-41.74269 3.84223,-27.26127 45.95994,-26.13067 z"
+         id="path224322"
+         sodipodi:nodetypes="ccccccccc" />
+    </mask>
   </defs>
   <g
      inkscape:label="guides"
@@ -153,90 +176,96 @@
        xml:space="preserve"
        transform="scale(0.26458334)"
        id="text37855"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.3333px;line-height:1;font-family:Kanit;-inkscape-font-specification:Kanit;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect37857)"><tspan
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.3333px;line-height:1;font-family:Kanit;-inkscape-font-specification:'Kanit, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect37857)"><tspan
          x="883.42969"
          y="340.21041"
-         id="tspan176602">    What's more 3D than 3D? Ballz 3D 3D. And only Sega and NVidia give </tspan><tspan
+         id="tspan235555">    What's more 3D than 3D? Ballz 3D 3D. And only Sega and NVidia give </tspan><tspan
          x="883.42969"
          y="361.54373"
-         id="tspan176604">you the power to blast process your spheres with real simulated </tspan><tspan
+         id="tspan235557">you the power to blast process your spheres with real simulated </tspan><tspan
          x="883.42969"
          y="382.87704"
-         id="tspan176606">reflections and smooth 240p/20fps gameplay.
+         id="tspan235559">reflections and smooth 240p/20fps gameplay.
 </tspan><tspan
          x="883.42969"
          y="404.21035"
-         id="tspan176608">    Experience the fighting game critics originally panned as slugish and </tspan><tspan
+         id="tspan235561">    Experience the fighting game critics originally panned as slugish and </tspan><tspan
          x="883.42969"
          y="425.54367"
-         id="tspan176610">awkward, now with a slight graphical upgrade. The 3D 3D -- only on </tspan><tspan
+         id="tspan235563">awkward, now with a slight graphical upgrade. The 3D 3D -- only on </tspan><tspan
          x="883.42969"
          y="446.87698"
-         id="tspan176612">32esque -- will put you more than twice as much in the fight as you </tspan><tspan
+         id="tspan235565">32esque -- will put you more than twice as much in the fight as you </tspan><tspan
          x="883.42969"
          y="468.21029"
-         id="tspan176614">would have been in simple 3D. It's like you and an identical twin are </tspan><tspan
+         id="tspan235567">would have been in simple 3D. It's like you and an identical twin are </tspan><tspan
          x="883.42969"
          y="489.54361"
-         id="tspan176618">both there at the same time, seeing with four eyes but <tspan
-   style="font-style:italic"
-   id="tspan176616">thinking with </tspan></tspan><tspan
+         id="tspan235569">both there at the same time, seeing with four eyes but thinking with </tspan><tspan
          x="883.42969"
          y="510.87692"
-         id="tspan176622"><tspan
-   style="font-style:italic"
-   id="tspan176620">only one brain</tspan>.
+         id="tspan235571">only one brain.
 </tspan><tspan
          x="883.42969"
          y="532.21023"
-         id="tspan176624">    What about racing games? You'd think we might remaster Sega </tspan><tspan
+         id="tspan235573">    What about racing games? You'd think we might remaster Sega </tspan><tspan
          x="883.42969"
          y="553.54354"
-         id="tspan176626">Virtua Racing or bring the arcade classic Hang-On to the powerful </tspan><tspan
+         id="tspan235575">Virtua Racing or bring the arcade classic Hang-On to the powerful </tspan><tspan
          x="883.42969"
          y="574.87686"
-         id="tspan176628">quad-CPU single-GPU beast that is the Sega Genesis CD 32X 32esque. </tspan><tspan
+         id="tspan235577">quad-CPU single-GPU beast that is the Sega Genesis CD 32X 32esque. </tspan><tspan
          x="883.42969"
          y="596.21017"
-         id="tspan176632">But we haven't, for some reason. Maybe we will in the future. <tspan
-   style="font-style:italic"
-   id="tspan176630">Polygons </tspan></tspan><tspan
+         id="tspan235579">But we haven't, for some reason. Maybe we will in the future. Polygons </tspan><tspan
          x="883.42969"
          y="617.54348"
-         id="tspan176636"><tspan
-   style="font-style:italic"
-   id="tspan176634">for the polygon god.</tspan>
+         id="tspan235581">for the polygon god.
 </tspan><tspan
          x="883.42969"
          y="638.8768"
-         id="tspan176638">    Star Wars Arcade would also be amazing on the 32esque. Have we </tspan><tspan
+         id="tspan235583">    Star Wars Arcade would also be amazing on the 32esque. Have we </tspan><tspan
          x="883.42969"
          y="660.21011"
-         id="tspan176640">done any work toward that goal? We mentioned it here. Otherwise, we </tspan><tspan
+         id="tspan235585">done any work toward that goal? We mentioned it here. Otherwise, we </tspan><tspan
          x="883.42969"
          y="681.54342"
-         id="tspan176642">are waiting to see how it tests with audiences before commiting </tspan><tspan
+         id="tspan235587">are waiting to see how it tests with audiences before committing </tspan><tspan
          x="883.42969"
          y="702.87673"
-         id="tspan176646">development resources. RTesque -- <tspan
-   style="font-style:italic"
-   id="tspan176644">it's ON-ish</tspan>.
+         id="tspan235589">development resources. RTesque -- it's ON-ish.
 </tspan><tspan
          x="883.42969"
          y="724.21005"
-         id="tspan176648">    Got cash to burn? Buy two 32esques and two NVidia RTX 3080 SLI </tspan><tspan
+         id="tspan235591">    Got cash to burn? Buy two 32esques and two
+</tspan><tspan
          x="883.42969"
          y="745.54336"
-         id="tspan176650">Edition GPUs for the ultimate dual-GPU experience in supported </tspan><tspan
+         id="tspan235593">NVidia RTX 3080 SLI Edition GPUs for the
+</tspan><tspan
          x="883.42969"
          y="766.87667"
-         id="tspan176652">games. Sure, we said multi-GPU was a declining market segment; but </tspan><tspan
+         id="tspan235595">ultimate dual-GPU experience in supported
+</tspan><tspan
          x="883.42969"
          y="788.20999"
-         id="tspan176654">what we actually meant is we were saving our inventory of GA102's with </tspan><tspan
+         id="tspan235597">games. Sure, we said multi-GPU was a
+</tspan><tspan
          x="883.42969"
          y="809.5433"
-         id="tspan176656">non-fused-off SLI for simultaneous launch with the 32esque.</tspan></text>
+         id="tspan235599">declining market segment; but what we
+</tspan><tspan
+         x="883.42969"
+         y="830.87661"
+         id="tspan235601">actually meant is we were saving our
+</tspan><tspan
+         x="883.42969"
+         y="852.20993"
+         id="tspan235603">inventory of GA102's with non-fused-off
+</tspan><tspan
+         x="883.42969"
+         y="873.54324"
+         id="tspan235605">SLI for simultaneous launch with the 32esque.</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:14.8003px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Bold';letter-spacing:-0.16037px;word-spacing:0px;stroke-width:0.264583"
@@ -313,15 +342,26 @@
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:1;font-family:Kanit;-inkscape-font-specification:Kanit;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect72401)"><tspan
          x="883.42969"
          y="336.28625"
-         id="tspan176658">Sega Genesis with Sega CD, Sega 32X, and Sega-NVidia 32esque required for full gameplay </tspan><tspan
+         id="tspan235607">Sega Genesis with Sega CD, Sega 32X, and Sega-NVidia 32esque required for full gameplay </tspan><tspan
          x="883.42969"
          y="352.28625"
-         id="tspan176660">experience. Screenshots shown represent current development porgress and may not match final </tspan><tspan
+         id="tspan235609">experience. Screenshots shown represent current development porgress and may not match final </tspan><tspan
          x="883.42969"
          y="368.28625"
-         id="tspan176662">cartridge content. 32esque not compatible with LHR GPUs. Ballz 3D 3D appears courtesy TCHOW llc; </tspan><tspan
+         id="tspan235611">cartridge content. 32esque not compatible with LHR GPUs. Ballz 3D 3D appears courtesy TCHOW llc; </tspan><tspan
          x="883.42969"
          y="384.28625"
-         id="tspan176664">ix@tchow.com .</tspan></text>
+         id="tspan235613">ix@tchow.com .</tspan></text>
+    <image
+       width="98.247353"
+       height="98.247353"
+       preserveAspectRatio="none"
+       style="stroke-width:7.18141;image-rendering:optimizeQuality"
+       xlink:href="hardware.png"
+       id="image220819"
+       x="332.0755"
+       y="162.26251"
+       mask="url(#mask224320)"
+       transform="rotate(16.182578,378.08933,217.91327)" />
   </g>
 </svg>
