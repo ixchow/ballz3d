@@ -372,8 +372,8 @@ static inline void add_sphere(
 			*count += 1; \
 		} while (0)
 
-	#define RINGS 8
-	#define SLICES 8
+	#define RINGS 16
+	#define SLICES 16
 	static float *ringzr = NULL;
 	static float *slicexy = NULL;
 	if (!ringzr) {
@@ -525,14 +525,14 @@ static GLuint compile_shader(GLenum shader_type, const char * name, const char *
 	glCompileShader(ret);
 	GLint compile_status, loglen;
 	glGetShaderiv(ret, GL_COMPILE_STATUS, &compile_status);
-	if (!compile_status) {
+	if (compile_status != GL_TRUE) {
 		glGetShaderiv(ret, GL_INFO_LOG_LENGTH, &loglen);
 		char *log = malloc(loglen);
 		glGetShaderInfoLog(ret, loglen, NULL, log);
 		warning("Shader %s failed to compile:\n%s\n", name, log);
 		free(log);
 		glDeleteShader(ret);
-		return 0;
+		exit(1);
 	}
 	return ret;
 }
@@ -644,9 +644,9 @@ static void gl_setup()
 		"	vec3 l = vec3(0.0, 0.0, 1.0);\n"
 		"	float e = 0.5 * dot(n,l) + 0.5;\n"
 		"	vec3 refl = normalize(reflect(position, normal));\n"
-		"	vec3 refl_color = texture(BG, refl.xy * vec2(0.25, 0.25) + vec2(0.75,0.25) ).rgb;\n"
+		"	vec3 refl_color = texture(BG, refl.xy * vec2(0.5, 0.5) + vec2(0.5,0.25) ).rgb;\n"
 		"	fragColor = vec4(color.rgb * e + refl_color * 0.5, color.a);\n"
-		//"	fragColor = vec4(texture(BG, n.xy).rgb * e, color.a);\n"
+		//"	fragColor = vec4(texture(BG, refl.xy * vec2(0.5,0.5) + vec2(0.5,0.25)).rg, 1.0, 1.0);\n" //DEBUG
 		"}\n"
 	);
 
@@ -1928,11 +1928,15 @@ static void draw_player(struct OverlayAttrib *attribs, uint32_t *attribs_count,
 
 		//warning("world: %f, %f, %f\n", wx, wy, wz); //DEBUG
 
+		float cR = sin(player->color_radius[ball].color * 17.0f + 1) * 0.25f + 0.75f;
+		float cG = sin(player->color_radius[ball].color * 10.0f + 1) * 0.25f + 0.75f;
+		float cB = sin(player->color_radius[ball].color * 5.0f + 1) * 0.25f + 0.75f;
+
 		float radius = 0.6f * player->color_radius[ball].radius;
 		add_sphere(attribs, attribs_count,
 			wx, wy, wz,
 			radius,
-			R, G, B, 0xff
+			cR * 255, cG * 255, cB * 255, 0xff
 		);
 	}
 
@@ -2016,7 +2020,7 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 
 			
 			struct Camera *camera;
-			warning("camera mode %d\n", (int)(*(uint16_t *)(bytes + 0x33bc))); //DEBUG
+			//warning("camera mode %d\n", (int)(*(uint16_t *)(bytes + 0x33bc))); //DEBUG
 			if (*(uint16_t *)(bytes + 0x33bc) < 2) {
 				//warning("standard camera\n");
 				camera = (struct Camera *)(bytes + 0x11c8);
@@ -2162,7 +2166,7 @@ static void process_framebuffer(uint32_t *buffer, uint8_t which, int width, uint
 			//get balls for players:
 			struct Player *player1 = (struct Player *)(bytes + 0x716);
 			struct Player *player2 = (struct Player *)(bytes + 0xc50);
-			warning("Player 1 balls: %d, Player 2 balls: %d\n", (int)player1->balls_count, (int)player2->balls_count); //TEST
+			//warning("Player 1 balls: %d, Player 2 balls: %d\n", (int)player1->balls_count, (int)player2->balls_count); //TEST
 			draw_player(attribs, &overlay_count, player1, camera, 0xff, 0x88, 0x88);
 			draw_player(attribs, &overlay_count, player2, camera, 0x88, 0x88, 0xff);
 			//draw_player(attribs, &overlay_count, bytes + (0xf8e - 0xa54), 0xff, 0x00, 0xff);

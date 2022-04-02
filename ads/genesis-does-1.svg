@@ -16,24 +16,25 @@
    xmlns:svg="http://www.w3.org/2000/svg">
   <sodipodi:namedview
      id="namedview7"
-     pagecolor="#979797"
+     pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1.0"
      inkscape:pageshadow="2"
-     inkscape:pageopacity="0"
+     inkscape:pageopacity="1"
      inkscape:pagecheckerboard="0"
      inkscape:document-units="in"
      showgrid="false"
      units="in"
      inkscape:zoom="0.77771465"
-     inkscape:cx="660.91079"
-     inkscape:cy="636.48023"
-     inkscape:window-width="2615"
-     inkscape:window-height="1748"
-     inkscape:window-x="396"
-     inkscape:window-y="256"
+     inkscape:cx="918.07451"
+     inkscape:cy="631.33696"
+     inkscape:window-width="2205"
+     inkscape:window-height="1646"
+     inkscape:window-x="937"
+     inkscape:window-y="264"
      inkscape:window-maximized="0"
-     inkscape:current-layer="layer2" />
+     inkscape:current-layer="layer2"
+     inkscape:snap-global="true" />
   <defs
      id="defs2">
     <rect
@@ -95,12 +96,22 @@
          id="path224322"
          sodipodi:nodetypes="ccccccccc" />
     </mask>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath254467">
+      <path
+         style="fill:#ffffff;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 107.95,103.38573 c -58.226684,-0.11501 -78.68617,3.68142 -78.68617,3.68142 0,0 -3.605684,13.91858 -3.496448,53.53018 0.109235,39.61159 3.496448,53.53017 3.496448,53.53017 0,0 20.459486,3.79643 78.68617,3.68142 58.22669,-0.11502 78.68618,-3.68142 78.68618,-3.68142 0,0 3.60568,-13.91858 3.49644,-53.53017 -0.10923,-39.6116 -3.49644,-53.53018 -3.49644,-53.53018 0,0 -20.45949,-3.5664 -78.68618,-3.68142 z"
+         id="path254469"
+         sodipodi:nodetypes="zczczczcz" />
+    </clipPath>
   </defs>
   <g
      inkscape:label="guides"
      inkscape:groupmode="layer"
      id="layer1"
-     sodipodi:insensitive="true">
+     sodipodi:insensitive="true"
+     style="display:none">
     <rect
        style="fill:#ffffff;fill-rule:evenodd;stroke:#cccccc;stroke-width:0.353;stroke-miterlimit:4;stroke-dasharray:0.706, 1.412;stroke-dashoffset:0;stop-color:#000000"
        id="rect846"
@@ -145,28 +156,101 @@
        transform="scale(0.26458334)"
        id="text5323"
        style="font-size:16px;line-height:0.55;font-family:'TeX Gyre Termes Math';-inkscape-font-specification:'TeX Gyre Termes Math';letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect5325)" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:800;font-stretch:normal;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583"
-       x="64.138405"
-       y="42.038288"
-       id="text10009"><tspan
-         sodipodi:role="line"
-         id="tspan10007"
-         style="font-style:normal;font-variant:normal;font-weight:800;font-stretch:normal;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';stroke-width:0.264583"
-         x="64.138405"
-         y="42.038288">32ESQUE CAN</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:800;font-stretch:normal;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583"
-       x="16.730858"
-       y="74.978668"
-       id="text15071"><tspan
-         sodipodi:role="line"
-         id="tspan15069"
-         style="font-style:normal;font-variant:normal;font-weight:800;font-stretch:normal;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';stroke-width:0.264583"
-         x="16.730858"
-         y="74.978668">WHAT NINTENCAN`T.</tspan></text>
+    <g
+       aria-label="32ESQUE CAN"
+       id="text10009"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583">
+      <path
+         d="m 74.446285,42.467783 q -1.202586,0 -3.006465,-0.214747 -1.76093,-0.171798 -3.521859,-0.515394 -1.76093,-0.386546 -2.920566,-0.85899 v -7.129618 q 1.889778,0.85899 4.037253,1.245536 2.190425,0.386545 3.908405,0.386545 2.104525,0 3.135313,-0.472444 1.030788,-0.515394 1.030788,-1.846829 0,-1.932727 -3.135313,-1.932727 h -4.853294 l 0.558343,-5.969981 h 4.037254 q 1.589131,0 2.233374,-0.472444 0.687192,-0.515394 0.687192,-1.589132 0,-0.987838 -0.944889,-1.503232 -0.944889,-0.515394 -3.006465,-0.515394 -1.975677,0 -3.951355,0.472444 -1.975677,0.429495 -3.350061,1.159637 v -7.129618 q 1.71798,-0.687192 4.166102,-1.159636 2.448122,-0.472445 4.939193,-0.472445 3.650707,0 6.227677,1.073738 2.57697,1.073737 3.951354,2.920566 1.374384,1.803879 1.374384,4.166102 0,3.951354 -2.57697,6.055879 1.460283,0.687192 2.276324,2.104526 0.81604,1.374384 0.81604,3.521859 0,3.006465 -1.589131,4.939193 -1.589132,1.932727 -4.3379,2.834667 -2.705818,0.901939 -6.184728,0.901939 z"
+         id="path235756" />
+      <path
+         d="m 87.810633,42.038288 v -4.123152 q 1.245536,-2.147475 2.834667,-3.865455 1.632081,-1.76093 3.693657,-3.607758 1.675031,-1.460283 2.705819,-2.448122 1.073737,-0.987838 1.546182,-1.803879 0.515394,-0.85899 0.515394,-1.846828 0,-2.534021 -3.47891,-2.534021 -1.846828,0 -3.650707,0.429495 -1.76093,0.429495 -3.307112,1.116687 v -7.77386 q 1.803879,-0.730141 4.252001,-1.159636 2.491071,-0.472445 5.11099,-0.472445 5.325736,0 7.902706,2.491071 2.61992,2.448122 2.61992,6.485375 0,1.846829 -0.42949,3.221213 -0.4295,1.331434 -1.33144,2.491071 -0.90194,1.116687 -2.40517,2.448121 -1.07374,0.944889 -2.27632,1.975677 -1.15964,1.030788 -1.76093,1.932728 h 8.4181 v 7.043718 z"
+         id="path235758" />
+      <path
+         d="M 110.88157,42.038288 V 14.378809 h 21.5177 v 6.828971 h -12.28356 v 3.521859 h 10.69443 v 7.000769 h -10.69443 v 3.478909 h 12.28356 v 6.828971 z"
+         id="path235760" />
+      <path
+         d="m 143.61614,42.467783 q -2.87762,0 -5.49754,-0.472444 -2.57697,-0.472445 -4.38085,-1.331435 v -7.215516 q 2.01863,0.944889 4.4238,1.546182 2.44812,0.601293 4.46675,0.601293 1.71798,0 2.61992,-0.343596 0.94489,-0.343596 0.94489,-1.288485 0,-1.073738 -1.41733,-1.546182 -1.41734,-0.515394 -4.08021,-1.417334 -2.74876,-0.944889 -4.3379,-2.018626 -1.54618,-1.116687 -2.23337,-2.662869 -0.68719,-1.589132 -0.68719,-3.865455 0,-8.504002 11.81111,-8.504002 1.46028,0 3.09236,0.214748 1.67503,0.171798 3.17827,0.472444 1.54618,0.257697 2.61992,0.601293 v 7.258466 q -2.19043,-0.85899 -4.03726,-1.202586 -1.80388,-0.386545 -3.30711,-0.386545 -1.50323,0 -2.74877,0.257697 -1.20258,0.214747 -1.20258,1.202586 0,0.81604 1.07374,1.245535 1.07373,0.386546 3.60775,1.073738 3.39301,0.944889 5.11099,2.233374 1.76093,1.288485 2.36223,3.049414 0.64424,1.71798 0.64424,3.951354 0,3.865456 -3.00647,6.227678 -3.00646,2.319273 -9.01939,2.319273 z"
+         id="path235762" />
+      <path
+         d="m 175.70645,49.425602 q -4.29495,0 -6.14178,-1.932727 -1.84683,-1.889778 -1.93273,-5.282789 -5.19689,-0.773091 -7.98861,-4.080202 -2.74876,-3.307112 -2.74876,-9.878386 0,-5.196889 1.67503,-8.332203 1.71798,-3.135313 4.93919,-4.552647 3.22121,-1.417334 7.85976,-1.417334 4.63854,0 7.85976,1.417334 3.22121,1.417334 4.89624,4.552647 1.71798,3.135314 1.71798,8.332203 0,6.614223 -2.83467,9.921335 -2.83466,3.307112 -8.0745,4.037253 0.0859,1.030788 0.64424,1.374384 0.55834,0.386546 1.63208,0.386546 1.46028,0 2.87762,-0.472445 v 5.368688 q -0.73015,0.214747 -1.93273,0.386545 -1.20259,0.171798 -2.44812,0.171798 z m -4.3379,-14.774628 q 2.66287,0 3.8225,-1.503233 1.20259,-1.503232 1.20259,-4.896243 0,-3.564808 -1.20259,-4.982142 -1.15963,-1.460283 -3.8225,-1.460283 -2.70582,0 -3.90841,1.460283 -1.15963,1.417334 -1.15963,4.982142 0,3.393011 1.15963,4.896243 1.20259,1.503233 3.90841,1.503233 z"
+         id="path235764" />
+      <path
+         d="m 201.1825,42.467783 q -3.86545,0 -6.91487,-1.288485 -3.04941,-1.288485 -4.81034,-3.779556 -1.71798,-2.491071 -1.71798,-6.141779 V 14.378809 h 9.23414 v 15.805417 q 0,4.466748 4.20905,4.466748 4.20905,0 4.20905,-4.466748 V 14.378809 h 9.23415 v 16.879154 q 0,3.650708 -1.76093,6.141779 -1.71798,2.491071 -4.7674,3.779556 -3.00646,1.288485 -6.91487,1.288485 z"
+         id="path235766" />
+      <path
+         d="M 217.38149,42.038288 V 14.378809 h 21.5177 v 6.828971 h -12.28356 v 3.521859 h 10.69442 v 7.000769 h -10.69442 v 3.478909 h 12.28356 v 6.828971 z"
+         id="path235768" />
+      <path
+         d="m 264.25351,42.467783 q -7.85976,0 -11.93996,-3.650707 -4.03725,-3.650708 -4.03725,-10.522628 0,-7.043718 3.9943,-10.694426 3.9943,-3.650708 11.89701,-3.650708 2.66287,0 4.6815,0.386546 2.01862,0.386545 3.9084,1.116687 v 8.031557 q -1.97568,-0.85899 -3.9084,-1.288485 -1.88978,-0.429495 -4.03726,-0.429495 -3.47891,0 -5.32574,1.503232 -1.80387,1.460283 -1.80387,5.025092 0,3.478909 1.88977,4.939192 1.93273,1.417334 5.32574,1.417334 2.10453,0 4.03726,-0.386546 1.93272,-0.429495 3.9084,-1.288485 v 8.074507 q -1.88978,0.687192 -3.95135,1.030788 -2.01863,0.386545 -4.63855,0.386545 z"
+         id="path235770" />
+      <path
+         d="M 273.23697,42.038288 283.8455,14.378809 h 9.66364 l 10.65147,27.659479 h -9.62068 l -2.14748,-5.497536 h -7.43026 l -2.10453,5.497536 z m 12.8419,-11.939961 h 5.19689 l -2.61992,-6.700122 z"
+         id="path235772" />
+      <path
+         d="M 306.27213,42.038288 V 14.378809 h 7.77386 l 9.10529,12.756002 V 14.378809 h 9.23414 v 27.659479 h -7.85976 l -9.01939,-12.713052 v 12.713052 z"
+         id="path235774" />
+    </g>
+    <path
+       d="M 24.032273,74.978668 17.589848,47.31919 h 9.019395 l 2.61992,12.627153 2.319273,-8.203355 V 47.31919 h 7.516162 l 3.650708,12.670102 2.834667,-12.670102 h 9.019395 L 48.169893,74.978668 H 39.966538 L 36.229931,62.394464 32.192678,74.978668 Z"
+       id="path235723"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="M 56.680913,74.978668 V 47.31919 h 9.234142 v 9.663637 H 74.11841 V 47.31919 h 9.234143 V 74.978668 H 74.11841 V 65.31503 h -8.203355 v 9.663638 z"
+       id="path235725"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="M 85.46407,74.978668 96.072596,47.31919 h 9.663634 l 10.65148,27.659478 h -9.62069 l -2.14747,-5.497536 h -7.430267 l -2.104525,5.497536 z m 12.8419,-11.939961 h 5.19689 l -2.61992,-6.700122 z"
+       id="path235727"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="M 120.51781,74.978668 V 54.062261 h -7.38732 V 47.31919 h 24.05172 v 6.743071 h -7.43026 v 20.916407 z"
+       id="path235729"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="M 146.77405,74.978668 V 47.31919 h 7.77386 l 9.10529,12.756001 V 47.31919 h 9.23415 v 27.659478 h -7.85976 l -9.0194,-12.713052 v 12.713052 z"
+       id="path235731"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="M 175.85791,74.978668 V 47.31919 h 9.23414 v 27.659478 z"
+       id="path235733"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="M 188.06255,74.978668 V 47.31919 h 7.77386 l 9.10529,12.756001 V 47.31919 h 9.23414 v 27.659478 h -7.85976 l -9.01939,-12.713052 v 12.713052 z"
+       id="path235735"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="M 224.9115,74.978668 V 54.062261 h -7.38731 V 47.31919 h 24.05172 v 6.743071 h -7.43026 v 20.916407 z"
+       id="path235737"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="M 242.82849,74.978668 V 47.31919 h 21.5177 v 6.82897 h -12.28356 v 3.521859 h 10.69443 v 7.000769 h -10.69443 v 3.47891 h 12.28356 v 6.82897 z"
+       id="path235739"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="M 266.24301,74.978668 V 47.31919 h 7.77386 l 9.10529,12.756001 V 47.31919 h 9.23414 v 27.659478 h -7.85975 l -9.0194,-12.713052 v 12.713052 z"
+       id="path235741"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="m 310.44511,75.408163 q -7.85976,0 -11.93996,-3.650707 -4.03725,-3.650708 -4.03725,-10.522628 0,-7.043718 3.9943,-10.694426 3.9943,-3.650707 11.89701,-3.650707 2.66287,0 4.6815,0.386545 2.01862,0.386546 3.9084,1.116687 v 8.031557 q -1.97568,-0.85899 -3.9084,-1.288485 -1.88978,-0.429495 -4.03726,-0.429495 -3.47891,0 -5.32573,1.503232 -1.80388,1.460283 -1.80388,5.025092 0,3.478909 1.88977,4.939193 1.93273,1.417333 5.32574,1.417333 2.10453,0 4.03726,-0.386545 1.93272,-0.429495 3.9084,-1.288486 v 8.074507 q -1.88978,0.687192 -3.95135,1.030788 -2.01863,0.386545 -4.63855,0.386545 z"
+       id="path235743"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="M 319.42856,74.978668 330.03709,47.31919 h 9.66363 l 10.65148,27.659478 h -9.62069 l -2.14747,-5.497536 h -7.43027 l -2.10452,5.497536 z m 12.8419,-11.939961 h 5.19689 l -2.61992,-6.700122 z"
+       id="path235745"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="M 352.46373,74.978668 V 47.31919 h 7.77386 l 9.10529,12.756001 V 47.31919 h 9.23414 v 27.659478 h -7.85976 l -9.01939,-12.713052 v 12.713052 z"
+       id="path235747"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="m 388.39853,51.580918 5.51098,-13.40262 -9.14822,2.488177 -5.07011,13.282711 z"
+       id="path235749"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
+    <path
+       d="M 398.36585,74.978668 V 54.062261 h -7.38731 V 47.31919 h 24.05172 v 6.743071 H 407.6 v 20.916407 z"
+       id="path235751"
+       style="font-weight:800;font-size:42.9495px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Ultra-Bold';letter-spacing:-0.465384px;word-spacing:0px;stroke-width:0.264583" />
     <text
        xml:space="preserve"
        transform="scale(0.26458334)"
@@ -179,93 +263,93 @@
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.3333px;line-height:1;font-family:Kanit;-inkscape-font-specification:'Kanit, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect37857)"><tspan
          x="883.42969"
          y="340.21041"
-         id="tspan235555">    What's more 3D than 3D? Ballz 3D 3D. And only Sega and NVidia give </tspan><tspan
+         id="tspan254538">    What's more 3D than 3D? Ballz 3D 3D. And only Sega and NVidia give </tspan><tspan
          x="883.42969"
          y="361.54373"
-         id="tspan235557">you the power to blast process your spheres with real simulated </tspan><tspan
+         id="tspan254540">you the power to blast process your spheres with real simulated </tspan><tspan
          x="883.42969"
          y="382.87704"
-         id="tspan235559">reflections and smooth 240p/20fps gameplay.
+         id="tspan254542">reflections and smooth 240p/20fps gameplay.
 </tspan><tspan
          x="883.42969"
          y="404.21035"
-         id="tspan235561">    Experience the fighting game critics originally panned as slugish and </tspan><tspan
+         id="tspan254544">    Experience the fighting game critics originally panned as slugish and </tspan><tspan
          x="883.42969"
          y="425.54367"
-         id="tspan235563">awkward, now with a slight graphical upgrade. The 3D 3D -- only on </tspan><tspan
+         id="tspan254546">awkward, now with a slight graphical upgrade. The 3D 3D -- only on </tspan><tspan
          x="883.42969"
          y="446.87698"
-         id="tspan235565">32esque -- will put you more than twice as much in the fight as you </tspan><tspan
+         id="tspan254548">32esque -- will put you more than twice as much in the fight as you </tspan><tspan
          x="883.42969"
          y="468.21029"
-         id="tspan235567">would have been in simple 3D. It's like you and an identical twin are </tspan><tspan
+         id="tspan254550">would have been in simple 3D. It's like you and an identical twin are </tspan><tspan
          x="883.42969"
          y="489.54361"
-         id="tspan235569">both there at the same time, seeing with four eyes but thinking with </tspan><tspan
+         id="tspan254552">both there at the same time, seeing with four eyes but thinking with </tspan><tspan
          x="883.42969"
          y="510.87692"
-         id="tspan235571">only one brain.
+         id="tspan254554">only one brain.
 </tspan><tspan
          x="883.42969"
          y="532.21023"
-         id="tspan235573">    What about racing games? You'd think we might remaster Sega </tspan><tspan
+         id="tspan254556">    What about racing games? You'd think we might remaster Sega </tspan><tspan
          x="883.42969"
          y="553.54354"
-         id="tspan235575">Virtua Racing or bring the arcade classic Hang-On to the powerful </tspan><tspan
+         id="tspan254558">Virtua Racing or bring the arcade classic Hang-On to the powerful </tspan><tspan
          x="883.42969"
          y="574.87686"
-         id="tspan235577">quad-CPU single-GPU beast that is the Sega Genesis CD 32X 32esque. </tspan><tspan
+         id="tspan254560">quad-CPU single-GPU beast that is the Sega Genesis CD 32X 32esque. </tspan><tspan
          x="883.42969"
          y="596.21017"
-         id="tspan235579">But we haven't, for some reason. Maybe we will in the future. Polygons </tspan><tspan
+         id="tspan254562">But we haven't, for some reason. Maybe we will in the future. Polygons </tspan><tspan
          x="883.42969"
          y="617.54348"
-         id="tspan235581">for the polygon god.
+         id="tspan254564">for the polygon god.
 </tspan><tspan
          x="883.42969"
          y="638.8768"
-         id="tspan235583">    Star Wars Arcade would also be amazing on the 32esque. Have we </tspan><tspan
+         id="tspan254566">    Star Wars Arcade would also be amazing on the 32esque. Have we </tspan><tspan
          x="883.42969"
          y="660.21011"
-         id="tspan235585">done any work toward that goal? We mentioned it here. Otherwise, we </tspan><tspan
+         id="tspan254568">done any work toward that goal? We mentioned it here. Otherwise, we </tspan><tspan
          x="883.42969"
          y="681.54342"
-         id="tspan235587">are waiting to see how it tests with audiences before committing </tspan><tspan
+         id="tspan254570">are waiting to see how it tests with audiences before committing </tspan><tspan
          x="883.42969"
          y="702.87673"
-         id="tspan235589">development resources. RTesque -- it's ON-ish.
+         id="tspan254572">development resources. RTesque -- it's ON-ish.
 </tspan><tspan
          x="883.42969"
          y="724.21005"
-         id="tspan235591">    Got cash to burn? Buy two 32esques and two
+         id="tspan254574">    Got cash to burn? Buy two 32esques and two
 </tspan><tspan
          x="883.42969"
          y="745.54336"
-         id="tspan235593">NVidia RTX 3080 SLI Edition GPUs for the
+         id="tspan254576">NVidia RTX 3080 SLI Edition GPUs for the
 </tspan><tspan
          x="883.42969"
          y="766.87667"
-         id="tspan235595">ultimate dual-GPU experience in supported
+         id="tspan254578">ultimate dual-GPU experience in supported
 </tspan><tspan
          x="883.42969"
          y="788.20999"
-         id="tspan235597">games. Sure, we said multi-GPU was a
+         id="tspan254580">games. Sure, we said multi-GPU was a
 </tspan><tspan
          x="883.42969"
          y="809.5433"
-         id="tspan235599">declining market segment; but what we
+         id="tspan254582">declining market segment; but what we
 </tspan><tspan
          x="883.42969"
          y="830.87661"
-         id="tspan235601">actually meant is we were saving our
+         id="tspan254584">actually meant is we were saving our
 </tspan><tspan
          x="883.42969"
          y="852.20993"
-         id="tspan235603">inventory of GA102's with non-fused-off
+         id="tspan254586">inventory of GA102's with non-fused-off
 </tspan><tspan
          x="883.42969"
          y="873.54324"
-         id="tspan235605">SLI for simultaneous launch with the 32esque.</tspan></text>
+         id="tspan254588">SLI for simultaneous launch with the 32esque.</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:14.8003px;line-height:0.55;font-family:Kanit;-inkscape-font-specification:'Kanit Bold';letter-spacing:-0.16037px;word-spacing:0px;stroke-width:0.264583"
@@ -300,9 +384,9 @@
     <rect
        style="vector-effect:none;fill:#333333;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.352999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.706001, 1.412;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000"
        id="rect53848"
-       width="164.70282"
+       width="177.31212"
        height="129.27007"
-       x="25.598595"
+       x="19.29394"
        y="95.962296"
        ry="6.8763995"
        rx="6.8763995" />
@@ -316,7 +400,7 @@
        ry="3.3911812"
        rx="3.3911812" />
     <rect
-       style="vector-effect:none;fill:#00ffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.352999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.706001, 1.412;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000"
+       style="vector-effect:none;fill:#ffab00;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.352999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.706001, 1.412;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000"
        id="rect65286"
        width="182.67445"
        height="10.765208"
@@ -342,16 +426,16 @@
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:1;font-family:Kanit;-inkscape-font-specification:Kanit;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect72401)"><tspan
          x="883.42969"
          y="336.28625"
-         id="tspan235607">Sega Genesis with Sega CD, Sega 32X, and Sega-NVidia 32esque required for full gameplay </tspan><tspan
+         id="tspan254590">Sega Genesis with Sega CD, Sega 32X, and Sega-NVidia 32esque required for full gameplay </tspan><tspan
          x="883.42969"
          y="352.28625"
-         id="tspan235609">experience. Screenshots shown represent current development porgress and may not match final </tspan><tspan
+         id="tspan254592">experience. Screenshots shown represent current development porgress and may not match final </tspan><tspan
          x="883.42969"
          y="368.28625"
-         id="tspan235611">cartridge content. 32esque not compatible with LHR GPUs. Ballz 3D 3D appears courtesy TCHOW llc; </tspan><tspan
+         id="tspan254594">cartridge content. 32esque not compatible with LHR GPUs. Ballz 3D 3D appears courtesy walkingsep </tspan><tspan
          x="883.42969"
          y="384.28625"
-         id="tspan235613">ix@tchow.com .</tspan></text>
+         id="tspan254596">heavy industries; tokkot; and TCHOW llc. Contact ix@tchow.com for details.</tspan></text>
     <image
        width="98.247353"
        height="98.247353"
@@ -363,5 +447,21 @@
        y="162.26251"
        mask="url(#mask224320)"
        transform="rotate(16.182578,378.08933,217.91327)" />
+    <circle
+       style="opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.352999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.706001, 1.412;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000;stop-opacity:1"
+       id="path235833"
+       cx="413.76898"
+       cy="70.973061"
+       r="4.2007647" />
+    <image
+       width="166.29968"
+       height="116.4098"
+       preserveAspectRatio="none"
+       style="stroke-width:2.48196;image-rendering:optimizeQuality"
+       xlink:href="screen-ape.png"
+       id="image253683"
+       x="24.800158"
+       y="102.39243"
+       clip-path="url(#clipPath254467)" />
   </g>
 </svg>
